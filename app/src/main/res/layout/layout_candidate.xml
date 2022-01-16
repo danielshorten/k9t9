@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:background="@color/candidate_background"
+    android:fadingEdge="none"
+    tools:visibility="visible">
+
+    <TextView
+        android:id="@+id/first_prediction"
+        style="@style/Candidate"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        tools:text="First Prediction" />
+
+    <TextView
+        android:id="@+id/second_prediction"
+        style="@style/Candidate"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        tools:text="Second Prediction" />
+
+    <TextView
+        android:id="@+id/third_prediction"
+        style="@style/Candidate"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        tools:text="Third Prediction" />
+</LinearLayout>

@@ -1,8 +1,13 @@
+# macOS
+.DS_Store
+
 # Built application files
 *.apk
 *.aar
 *.ap_
 *.aab
+
+app/build
 
 # Files for the ART/Dalvik VM
 *.dex
@@ -37,6 +42,7 @@ proguard/
 captures/
 
 # IntelliJ
+.idea
 *.iml
 .idea/workspace.xml
 .idea/tasks.xml
