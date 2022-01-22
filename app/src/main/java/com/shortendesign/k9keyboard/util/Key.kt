@@ -17,5 +17,6 @@ enum class Key(val code: Char) {
     DPAD_DOWN('b'),
     DPAD_LEFT('c'),
     DPAD_RIGHT('d'),
-    BACK('e')
+    DPAD_SELECT('e'),
+    BACK('f')
 }

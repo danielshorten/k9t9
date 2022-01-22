@@ -1,18 +1,25 @@
 package com.shortendesign.k9keyboard.inputmode
 
+import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.entity.Word
 import com.shortendesign.k9keyboard.util.Key
+import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
 
 class WordInputMode(
     private val keypad: Keypad,
 ) {
+    private val LOG_TAG: String = "K9Word"
     private var cursorPosition: Int = 0
     private val codeWord = StringBuilder()
     private var candidateIdx: Int = 0
     private var cachedCandidates: List<Word>? = null
+    private var currentStatus = Status.WORD_CAP
+
+    val status: Status
+        get() = this.currentStatus
 
     fun setCursorPosition(position: Int) {
         cursorPosition = position
@@ -26,20 +33,23 @@ class WordInputMode(
     fun getKeyPressResult(key: Key): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
+                Log.d(LOG_TAG, "Space")
                 addSpace()
             }
             keypad.isLetter(key) -> {
+                Log.d(LOG_TAG, "Letter")
                 addLetter(key)
             }
             keypad.isDelete(key) -> {
+                Log.d(LOG_TAG, "Delete")
                 deleteLetter()
             }
             keypad.isNext(key) -> {
+                Log.d(LOG_TAG, "Next")
                 nextCandidate()
             }
             else -> {
-                clear()
-                state(false)
+                state(consumed = false, word = finishComposing())
             }
         }
     }
@@ -62,8 +72,12 @@ class WordInputMode(
 
     private fun addSpace(): KeyPressResult {
         cursorPosition++
-        clear()
-        return state(word = " ")
+        // Get the final candidate word
+        var word = finishComposing()
+        // Add a space
+        word = if (word != null) "$word " else " "
+
+        return state(consumed = true, word = word)
     }
 
     private fun nextCandidate(): KeyPressResult {
@@ -81,15 +95,18 @@ class WordInputMode(
         return KeyPressResult(
             consumed = consumed,
             cursorPosition = cursorPosition,
-            codeWord = if (codeWord.isEmpty())  null else codeWord.toString(),
+            codeWord = if (codeWord.isEmpty()) null else codeWord.toString(),
             word = word,
-            candidateIdx = candidateIdx
+            candidateIdx = candidateIdx,
         )
     }
 
-    private fun clear() {
+    private fun finishComposing(): String? {
+        val word = cachedCandidates?.get(candidateIdx)?.word
+        cachedCandidates = null
         codeWord.clear()
         candidateIdx = 0
+        return word
     }
 
     private fun isComposing(): Boolean {

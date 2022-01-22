@@ -95,15 +95,46 @@ class WordInputModeTest {
 
     @Test
     fun testSpace() {
+        // SETUP
         val mode = this.mode!!
-        pressKeys(mode, Key.N2, Key.N2, Key.N5, Key.N5)
 
+        // EXECUTE
+        // Press space
         val result = mode.getKeyPressResult(Key.N0)
 
         assertEquals(true, result.consumed)
-        assertEquals(5, result.cursorPosition)
+        assertEquals(1, result.cursorPosition)
         assertEquals(null, result.codeWord)
         assertEquals(0, result.candidateIdx)
         assertEquals(" ", result.word)
+    }
+
+    @Test
+    fun testSpaceWithWord() {
+        // SETUP
+        val mode = this.mode!!
+        // Type a word
+        pressKeys(mode, Key.N2, Key.N2, Key.N5, Key.N5)
+        // Send the mode candidates for the word
+        mode.getComposingText(listOf(TestUtil.createWord("call", "2255")))
+
+        // EXECUTE
+        // Press space
+        val firstSpaceResult = mode.getKeyPressResult(Key.N0)
+        val secondSpaceResult = mode.getKeyPressResult(Key.N0)
+
+        // First space should come back with the word
+        assertEquals(true, firstSpaceResult.consumed)
+        assertEquals(5, firstSpaceResult.cursorPosition)
+        assertEquals(null, firstSpaceResult.codeWord)
+        assertEquals(0, firstSpaceResult.candidateIdx)
+        assertEquals("call ", firstSpaceResult.word)
+
+        // Next space should just be a space
+        assertEquals(true, secondSpaceResult.consumed)
+        assertEquals(6, secondSpaceResult.cursorPosition)
+        assertEquals(null, secondSpaceResult.codeWord)
+        assertEquals(0, secondSpaceResult.candidateIdx)
+        assertEquals(" ", secondSpaceResult.word)
     }
 }

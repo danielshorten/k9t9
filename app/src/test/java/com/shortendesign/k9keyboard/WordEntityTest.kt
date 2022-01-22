@@ -1,7 +1,6 @@
 package com.shortendesign.k9keyboard
 
 import androidx.room.Room
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.shortendesign.k9keyboard.dao.WordDao
 import com.shortendesign.k9keyboard.db.AppDatabase

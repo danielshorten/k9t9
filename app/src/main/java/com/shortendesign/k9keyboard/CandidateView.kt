@@ -32,21 +32,14 @@ class CandidateView
     private var candidateView: View? = null
 
     init {
-        candidateView = View.inflate(context, R.layout.layout_candidate, this)
-    }
-
-    /**
-     * A connection back to the service to communicate with the text field
-     * @param listener
-     */
-    fun setService(listener: K9InputMethodServiceImpl) {
+        candidateView = View.inflate(context, R.layout.invisible, this)
     }
 
     fun setSuggestions(suggestions: List<String>) {
-        clear()
-        updatePredictions(suggestions)
-        invalidate()
-        requestLayout()
+//        clear()
+//        updatePredictions(suggestions)
+//        invalidate()
+//        requestLayout()
     }
 
     private fun clear() {

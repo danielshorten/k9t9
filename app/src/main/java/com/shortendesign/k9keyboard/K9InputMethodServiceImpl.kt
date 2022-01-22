@@ -14,6 +14,7 @@ import com.shortendesign.k9keyboard.entity.Word
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
+import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
 
 
@@ -27,6 +28,8 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
     private var inputConnection: InputConnection? = null
+    private var cursorPosition: Int = 0
+    private var modeStatus = Status.WORD_CAP
 
     override fun onCreate() {
         super.onCreate()
@@ -38,31 +41,47 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
+        showStatusIcon(R.drawable.ime_en_lang_single)
+        cursorPosition = info?.initialSelEnd ?: 0
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(LOG_TAG, "keyCode: $keyCode")
-        val result = mode?.getKeyCodeResult(keyCode)
-        return if (result != null) {
-            if (result.codeWord != null) {
-                scope.launch {
-                    updateCandidates(result.codeWord, result.cursorPosition)
+        val mode = this.mode ?: return false
+        val result = mode.getKeyCodeResult(keyCode)
+        updateStatusIcon(mode.status)
+
+        if (result != null) {
+            if (result.consumed) {
+                if (result.codeWord != null) {
+                    scope.launch {
+                        updateCandidates(result.codeWord, 1)
+                    }
                 }
             }
             else {
-                inputConnection?.finishComposingText()
-                if (result.word != null) {
-                    inputConnection?.commitText(result.word, result.cursorPosition)
+                // Delete or back
+                if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+                    return if (cursorPosition > 0)
+                        inputConnection?.deleteSurroundingText(1, 0) ?: false
+                    else
+                        false
                 }
             }
-            result.consumed
-        } else {
-            false
+            // Committed word from the mode
+            if (result.word != null) {
+                inputConnection?.commitText(result.word, 2)
+            }
+            return result.consumed
+        }
+        else {
+            return false
         }
     }
 
     suspend fun updateCandidates(codeWord: String, cursorPosition: Int) {
         val candidates = wordDao.findCandidates(codeWord)
+        //Log.d(LOG_TAG, "CANDIDATES: " + candidates.joinToString())
         inputConnection?.setComposingText(mode!!.getComposingText(candidates), cursorPosition)
     }
 
@@ -73,9 +92,9 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
+        cursorPosition = newSelEnd
         mode?.setCursorPosition(newSelEnd)
-        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart,
-            candidatesEnd)
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
     override fun onCreateCandidatesView(): View {
         val candidatesView =
@@ -86,16 +105,17 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
-        super.onStartInput(attribute, restarting)
         val mode = WordInputMode(
             keypad = keypad,
         )
         this.mode = mode
         mode.setCursorPosition(attribute!!.initialSelStart.coerceAtLeast(attribute.initialSelEnd))
+        updateStatusIcon(mode.status)
     }
 
     override fun onFinishInput() {
         super.onFinishInput()
+        hideStatusIcon()
         this.mode = null
     }
 
@@ -121,6 +141,17 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         frequency = frequency,
         locale = locale
     )
+
+    private fun updateStatusIcon(status: Status) {
+        if (status != modeStatus) {
+            showStatusIcon(
+                when (status) {
+                    Status.WORD_CAP -> R.drawable.ime_en_lang_single
+                    else -> 0
+                }
+            )
+        }
+    }
 
     private fun initializeWordsFirstTime() {
         // TODO: Enumerate the settings keys
