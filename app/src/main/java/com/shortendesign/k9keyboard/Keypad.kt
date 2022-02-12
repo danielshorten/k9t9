@@ -77,7 +77,10 @@ class Keypad(
         for ((key, characters) in layout) {
             for (char in characters) {
                 letterKeyMap[char] = key
+                // If this letter isn't in non-alphanumeric => it should be alphanumeric
                 if (!LetterLayout.nonAlphaNumeric.contains(char)) {
+                    // Support mapping the uppercase character as well
+                    letterKeyMap[char.uppercaseChar()] = key
                     keyIsLetterMap[key] = true
                 }
                 else if (keyIsLetterMap[key] == null) {

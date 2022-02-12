@@ -29,6 +29,9 @@ class WordInputModeTest {
     }
 
 
+    /**
+     * Test pressing a single letter key
+     */
     @Test
     fun testAddLetter() {
         val result = mode!!.getKeyPressResult(Key.N2)
@@ -36,9 +39,11 @@ class WordInputModeTest {
         assertEquals(true, result.consumed)
         assertEquals(1, result.cursorPosition)
         assertEquals("2", result.codeWord)
-        assertEquals(0, result.candidateIdx)
     }
 
+    /**
+     * Test deleting a letter while composing
+     */
     @Test
     fun testDeleteLetter() {
         mode!!.getKeyPressResult(Key.N2)
@@ -47,9 +52,11 @@ class WordInputModeTest {
         assertEquals(true, result.consumed)
         assertEquals(0, result.cursorPosition)
         assertEquals(null, result.codeWord)
-        assertEquals(0, result.candidateIdx)
     }
 
+    /**
+     * Test deleting a letter while not composing
+     */
     @Test
     fun testDeleteLetterNoText() {
         val result = mode!!.getKeyPressResult(Key.BACK)
@@ -57,9 +64,29 @@ class WordInputModeTest {
         assertEquals(false, result.consumed)
         assertEquals(0, result.cursorPosition)
         assertEquals(null, result.codeWord)
-        assertEquals(0, result.candidateIdx)
     }
 
+    /**
+     * Test that resolveCodeWord properly updates the mode's code word
+     */
+    @Test
+    fun testResolveCodeWordReplacesCodeWord() {
+        val mode = this.mode!!
+        mode.getKeyPressResult(Key.N3)
+        mode.resolveCodeWord(
+            "3", listOf("daniel")
+        )
+        mode.getKeyPressResult(Key.N2)
+        mode.resolveCodeWord(
+            "32", listOf("daniel")
+        )
+        assertEquals("Code word should be '32'",
+            "32", mode.codeWord.toString())
+    }
+
+    /**
+     * Test advancing to next candidate while not composing
+     */
     @Test
     fun testNextCandidateNotComposing() {
         val result = mode!!.getKeyPressResult(Key.STAR)
@@ -67,30 +94,35 @@ class WordInputModeTest {
         assertEquals(true, result.consumed)
         assertEquals(0, result.cursorPosition)
         assertEquals(null, result.codeWord)
-        assertEquals(0, result.candidateIdx)
-
     }
 
+    /**
+     * Test advancing to next candidate
+     */
     @Test
     fun testNextCandidate() {
         val mode = this.mode!!
         pressKeys(mode, Key.N2, Key.N2, Key.N5, Key.N5)
 
-        val candidates = listOf(
-            TestUtil.createWord("call", "2255"),
-            TestUtil.createWord("ball", "2255")
-        )
+        val candidates = listOf("call", "ball")
 
-        val candidate1 = mode.getComposingText(candidates)
-        val result = mode.getKeyPressResult(Key.STAR)
-        val candidate2 = mode.getComposingText(candidates)
+        val candidate1 = mode.resolveCodeWord("2255", candidates)
+        val result1 = mode.getKeyPressResult(Key.STAR)
+        val candidate2 = mode.resolveCodeWord("2255", candidates)
+        mode.getKeyPressResult(Key.STAR)
+        val candidate3 = mode.resolveCodeWord("2255", candidates)
 
-        assertEquals(true, result.consumed)
-        assertEquals(4, result.cursorPosition)
-        assertEquals("2255", result.codeWord)
-        assertEquals(1, result.candidateIdx)
-        assertEquals("call", candidate1)
-        assertEquals("ball", candidate2)
+        // ASSERT
+        assertEquals("'next' should be consumed",
+            true, result1.consumed)
+        assertEquals("'next' should return a code word",
+            "2255", result1.codeWord)
+        assertEquals("First candidate should be 'call'",
+            "call", candidate1)
+        assertEquals("Second candidate should be 'ball'",
+            "ball", candidate2)
+        assertEquals("Third candidate should be 'call' again",
+            "call", candidate3)
     }
 
     @Test
@@ -103,10 +135,8 @@ class WordInputModeTest {
         val result = mode.getKeyPressResult(Key.N0)
 
         assertEquals(true, result.consumed)
-        assertEquals(1, result.cursorPosition)
+        //assertEquals(1, result.cursorPosition)
         assertEquals(null, result.codeWord)
-        assertEquals(0, result.candidateIdx)
-        assertEquals(" ", result.word)
     }
 
     @Test
@@ -115,26 +145,47 @@ class WordInputModeTest {
         val mode = this.mode!!
         // Type a word
         pressKeys(mode, Key.N2, Key.N2, Key.N5, Key.N5)
-        // Send the mode candidates for the word
-        mode.getComposingText(listOf(TestUtil.createWord("call", "2255")))
 
         // EXECUTE
         // Press space
-        val firstSpaceResult = mode.getKeyPressResult(Key.N0)
-        val secondSpaceResult = mode.getKeyPressResult(Key.N0)
+        val spaceResult = mode.getKeyPressResult(Key.N0)
 
         // First space should come back with the word
-        assertEquals(true, firstSpaceResult.consumed)
-        assertEquals(5, firstSpaceResult.cursorPosition)
-        assertEquals(null, firstSpaceResult.codeWord)
-        assertEquals(0, firstSpaceResult.candidateIdx)
-        assertEquals("call ", firstSpaceResult.word)
+        assertEquals(true, spaceResult.consumed)
+        assertEquals(null, spaceResult.codeWord)
+        assertEquals(" ", spaceResult.word)
+    }
 
-        // Next space should just be a space
-        assertEquals(true, secondSpaceResult.consumed)
-        assertEquals(6, secondSpaceResult.cursorPosition)
-        assertEquals(null, secondSpaceResult.codeWord)
-        assertEquals(0, secondSpaceResult.candidateIdx)
-        assertEquals(" ", secondSpaceResult.word)
+    @Test
+    fun testPartialCandidate() {
+        // SETUP
+        val mode = this.mode!!
+
+        // Type a part of a longer word
+        pressKeys(mode, Key.N2, Key.N2, Key.N5, Key.N2)
+        // Resolve the candidate
+        val candidate = mode.resolveCodeWord(
+            "2252",
+            listOf("balance")
+        )
+
+        assertEquals("the word should just be the letters that were typed",
+            "bala", candidate)
+    }
+
+    @Test
+    fun testApostrophe() {
+        // SETUP
+        val mode = this.mode!!
+
+        // Type a word with an apostrophe
+        pressKeys(mode, Key.N4, Key.N1, Key.N6)
+        val candidate = mode.resolveCodeWord(
+            "416",
+            listOf("I'm")
+        )
+
+        assertEquals("The candidate should be I'm",
+            "I'm", candidate)
     }
 }

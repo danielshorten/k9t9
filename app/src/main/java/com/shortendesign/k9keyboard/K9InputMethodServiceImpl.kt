@@ -1,6 +1,7 @@
 package com.shortendesign.k9keyboard
 
 import android.inputmethodservice.InputMethodService
+import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -12,10 +13,13 @@ import com.shortendesign.k9keyboard.db.AppDatabase
 import com.shortendesign.k9keyboard.entity.Setting
 import com.shortendesign.k9keyboard.entity.Word
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
+import com.shortendesign.k9keyboard.trie.Node
+import com.shortendesign.k9keyboard.trie.T9Trie
 import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
+import kotlin.collections.ArrayList
 
 
 class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
@@ -27,9 +31,11 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
+    private var isComposing = false
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
     private var modeStatus = Status.WORD_CAP
+    private val t9Trie = T9Trie()
 
     override fun onCreate() {
         super.onCreate()
@@ -40,9 +46,28 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
-        inputConnection = currentInputConnection
         showStatusIcon(R.drawable.ime_en_lang_single)
         cursorPosition = info?.initialSelEnd ?: 0
+
+        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
+            InputType.TYPE_CLASS_NUMBER ->
+                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
+            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
+                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
+            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
+                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
+            InputType.TYPE_CLASS_TEXT ->
+                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
+            else ->
+                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
+        }
+        if (this.t9Trie.root == null) {
+            Node.setSupportedChars("123456789")
+            this.t9Trie.add("2", "a")
+            scope.launch {
+                initT9Trie()
+            }
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -52,14 +77,9 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         updateStatusIcon(mode.status)
 
         if (result != null) {
-            if (result.consumed) {
-                if (result.codeWord != null) {
-                    scope.launch {
-                        updateCandidates(result.codeWord, 1)
-                    }
-                }
-            }
-            else {
+            //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
+            if (!result.consumed) {
+                finishComposing()
                 // Delete or back
                 if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
                     return if (cursorPosition > 0)
@@ -68,10 +88,22 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
                         false
                 }
             }
-            // Committed word from the mode
-            if (result.word != null) {
-                inputConnection?.commitText(result.word, 2)
+            // If we get back a code word, we'll need to resolve it
+            when {
+                result.codeWord != null -> {
+                    isComposing = true
+                    resolveCodeWord(result.codeWord, 1)
+                }
+                result.word != null -> {
+                    // TODO: Support a delay for committing the word
+                    finishComposing()
+                    inputConnection?.commitText(result.word, 2)
+                }
+                else -> {
+                    finishComposing()
+                }
             }
+
             return result.consumed
         }
         else {
@@ -79,10 +111,17 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
-    suspend fun updateCandidates(codeWord: String, cursorPosition: Int) {
-        val candidates = wordDao.findCandidates(codeWord)
-        //Log.d(LOG_TAG, "CANDIDATES: " + candidates.joinToString())
-        inputConnection?.setComposingText(mode!!.getComposingText(candidates), cursorPosition)
+    private fun finishComposing() {
+        if (isComposing) {
+            inputConnection?.finishComposingText()
+            isComposing = false
+        }
+    }
+
+    fun resolveCodeWord(codeWord: String, cursorPosition: Int) {
+        val candidates = t9Trie.getCandidates(codeWord)
+        val candidate = mode!!.resolveCodeWord(codeWord, candidates)
+        if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
@@ -96,6 +135,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         mode?.setCursorPosition(newSelEnd)
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
+
     override fun onCreateCandidatesView(): View {
         val candidatesView =
             CandidateView(applicationContext)
@@ -105,6 +145,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        inputConnection = currentInputConnection
         val mode = WordInputMode(
             keypad = keypad,
         )
@@ -153,6 +194,20 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
+    private suspend fun initT9Trie() {
+        Log.d(LOG_TAG, "Initializing T9 trie")
+        t9Trie.clear()
+        for (char in "123456789") {
+            Log.d(LOG_TAG, "Finding candidates for '$char'")
+            val words = wordDao.findCandidates(char.toString())
+            Log.d(LOG_TAG, "Found '${words.count()}'")
+            for (word in words) {
+                Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
+                t9Trie.add(word.code, word.word)
+            }
+        }
+    }
+
     private fun initializeWordsFirstTime() {
         // TODO: Enumerate the settings keys
         Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
@@ -170,7 +225,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     private fun initializeWords() {
-        val file_name = "word_freq.txt"
+        val file_name = "t9_words.txt"
         val batchSize = 500
         val wordBatch = ArrayList<Word>(batchSize)
         var freq: Int
@@ -178,11 +233,11 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             for (chunk in lines.chunked(batchSize)) {
                 wordBatch.clear()
                 chunk.forEachIndexed { index, line ->
-                    val parts = line.split(" ")
-                    freq = parts[1].toFloat().toInt()
+                    //val parts = line.split(" ")
+                    //freq = parts[1].toFloat().toInt()
                     wordBatch.add(
                         index,
-                        getWord(word = parts[2], frequency = freq)
+                        getWord(word = line, frequency = 1)
                     )
                 }
                 runBlocking {

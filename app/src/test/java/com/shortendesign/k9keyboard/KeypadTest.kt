@@ -13,4 +13,16 @@ class KeypadTest {
         val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
         assertEquals(keypad.getCodeForWord("ball"), "2255")
     }
+
+    @Test
+    fun getCodeForWordWithAccents() {
+        val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+        assertEquals(keypad.getCodeForWord("émigré"), "364473")
+    }
+
+    @Test
+    fun getCodeForCapitalizedWord() {
+        val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+        assertEquals(keypad.getCodeForWord("I'm"), "416")
+    }
 }

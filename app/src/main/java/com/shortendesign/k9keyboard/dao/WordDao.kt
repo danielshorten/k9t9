@@ -18,7 +18,7 @@ interface WordDao {
     fun getAll(): List<Word>
 
     @Query("SELECT * FROM word WHERE code LIKE :code || '%' " +
-            "ORDER BY length, frequency DESC LIMIT 10")
+            "ORDER BY length, frequency DESC LIMIT 50")
     suspend fun findCandidates(code: String): List<Word>
 
 }

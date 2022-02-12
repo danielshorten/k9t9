@@ -13,7 +13,7 @@ class WordInputMode(
 ) {
     private val LOG_TAG: String = "K9Word"
     private var cursorPosition: Int = 0
-    private val codeWord = StringBuilder()
+    val codeWord = StringBuilder()
     private var candidateIdx: Int = 0
     private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
@@ -33,41 +33,40 @@ class WordInputMode(
     fun getKeyPressResult(key: Key): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
-                Log.d(LOG_TAG, "Space")
+                //Log.d(LOG_TAG, "Space")
                 addSpace()
             }
             keypad.isLetter(key) -> {
-                Log.d(LOG_TAG, "Letter")
+                //Log.d(LOG_TAG, "Letter")
                 addLetter(key)
             }
             keypad.isDelete(key) -> {
-                Log.d(LOG_TAG, "Delete")
+                //Log.d(LOG_TAG, "Delete")
                 deleteLetter()
             }
             keypad.isNext(key) -> {
-                Log.d(LOG_TAG, "Next")
+                //Log.d(LOG_TAG, "Next")
                 nextCandidate()
             }
             else -> {
-                state(consumed = false, word = finishComposing())
+                finishComposing()
+                state(consumed = false)
             }
         }
     }
 
     private fun addLetter(key: Key): KeyPressResult {
-        codeWord.append(key.code)
-        cursorPosition++
-        return state(true)
+        return state(true, codeWord = codeWord.toString() + key.code)
     }
 
     private fun deleteLetter(): KeyPressResult {
         var consumed = false
+        var codeWord: String? = null
         if (isComposing()) {
-            codeWord.deleteAt(codeWord.length - 1)
-            cursorPosition--
+            codeWord = this.codeWord.take(this.codeWord.length - 1).toString()
             consumed = true
         }
-        return state(consumed)
+        return state(consumed, codeWord)
     }
 
     private fun addSpace(): KeyPressResult {
@@ -77,32 +76,30 @@ class WordInputMode(
         // Add a space
         word = if (word != null) "$word " else " "
 
-        return state(consumed = true, word = word)
+        return state(consumed = true, word = " ")
     }
 
     private fun nextCandidate(): KeyPressResult {
         if (isComposing()) {
-            if (candidateIdx + 1 == cachedCandidates?.count()) {
-                candidateIdx = 0
-            } else {
-                candidateIdx++
-            }
+            candidateIdx++
         }
         return state(true)
     }
 
-    private fun state(consumed: Boolean = true, word: String? = null): KeyPressResult {
+    private fun state(consumed: Boolean = true, codeWord: String? = null, word: String? = null): KeyPressResult {
         return KeyPressResult(
             consumed = consumed,
             cursorPosition = cursorPosition,
-            codeWord = if (codeWord.isEmpty()) null else codeWord.toString(),
-            word = word,
-            candidateIdx = candidateIdx,
+            codeWord = codeWord ?: if (this.codeWord.isEmpty()) null else this.codeWord.toString(),
+            word = word
         )
     }
 
     private fun finishComposing(): String? {
-        val word = cachedCandidates?.get(candidateIdx)?.word
+        var word = cachedCandidates?.get(candidateIdx)?.word
+        if (word != null && word.length > codeWord.length) {
+            word = word.substring(0, codeWord.length)
+        }
         cachedCandidates = null
         codeWord.clear()
         candidateIdx = 0
@@ -113,16 +110,28 @@ class WordInputMode(
         return codeWord.isNotEmpty()
     }
 
-    fun getComposingText(candidates: List<Word>): String? {
+    fun resolveCodeWord(codeWord: String, candidates: List<String>): String? {
         if (!candidates.isEmpty()) {
-            cachedCandidates = candidates
-            var candidateWord = candidates[candidateIdx].word
+            var candidateWord = when {
+                candidateIdx < candidates.count() -> candidates[candidateIdx]
+                candidateIdx >= candidates.count() && candidates.count() > 0 -> candidates[0]
+                else -> null
+            } ?: return null
+            // Reset the candidate index if it's falling out of bounds
+            if (candidateIdx >= candidates.count() && candidates.count() > 0) {
+                candidateIdx = 0
+            }
+
+            // Replace the code word
+            //Log.d(LOG_TAG,"CODEWORD BEFORE: ${this.codeWord}")
+            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
+            //Log.d(LOG_TAG,"CODEWORD AFTER: ${this.codeWord}")
             if (candidateWord.length > codeWord.length) {
                 candidateWord = candidateWord.substring(0, codeWord.length)
             }
             return candidateWord
         }
-        cachedCandidates = null
+
         return null
     }
 }

@@ -5,7 +5,7 @@ object LetterLayout {
         Key.N0 to listOf('0'),
         Key.N1 to listOf('1', '\'','.','?','!'),
         Key.N2 to listOf('2', 'a','b','c'),
-        Key.N3 to listOf('3', 'd','e','f'),
+        Key.N3 to listOf('3', 'd','e','é','f'),
         Key.N4 to listOf('4', 'g','h','i'),
         Key.N5 to listOf('5', 'j','k','l'),
         Key.N6 to listOf('6', 'm','n','o'),

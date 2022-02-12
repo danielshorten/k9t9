@@ -1,7 +1,5 @@
 package com.shortendesign.k9keyboard
 
-import com.shortendesign.k9keyboard.util.Status
-
 class KeyPressResult(
     // true if the keypress was consumed by the input method, false if it should be forwarded
     val consumed: Boolean,
@@ -9,10 +7,8 @@ class KeyPressResult(
     val cursorPosition: Int,
     // current code word
     val codeWord: String?,
-    // Literal word to add
-    val word: String?,
-    // Which of the candidates is selected
-    val candidateIdx: Int,
-) {
-
-}
+    // Actual string to compose
+    val word: String? = null,
+    // Delay before committing the word
+    val commitDelay: Int = 0
+) {}
