@@ -31,6 +31,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
+    private var preloadJob: Job? = null
     private var isComposing = false
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
@@ -63,7 +64,6 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
         if (this.t9Trie.root == null) {
             Node.setSupportedChars("123456789")
-            this.t9Trie.add("2", "a")
             scope.launch {
                 initT9Trie()
             }
@@ -92,7 +92,11 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             when {
                 result.codeWord != null -> {
                     isComposing = true
-                    resolveCodeWord(result.codeWord, 1)
+                    val candidate = resolveCodeWord(result.codeWord, 1)
+
+                    scope.launch {
+                        preloadTrie(result.codeWord, 2, candidate == null)
+                    }
                 }
                 result.word != null -> {
                     // TODO: Support a delay for committing the word
@@ -118,10 +122,12 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
-    fun resolveCodeWord(codeWord: String, cursorPosition: Int) {
-        val candidates = t9Trie.getCandidates(codeWord)
-        val candidate = mode!!.resolveCodeWord(codeWord, candidates)
+    fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
+        val candidates = t9Trie.getCandidates(codeWord, 10)
+        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
+        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
+        return candidate
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
@@ -199,13 +205,35 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         t9Trie.clear()
         for (char in "123456789") {
             Log.d(LOG_TAG, "Finding candidates for '$char'")
-            val words = wordDao.findCandidates(char.toString())
+            val words = wordDao.findCandidates(char.toString(), 50)
             Log.d(LOG_TAG, "Found '${words.count()}'")
             for (word in words) {
-                Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
+                //Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
                 t9Trie.add(word.code, word.word)
             }
         }
+    }
+
+    private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+        preloadJob?.cancel()
+        preloadJob = scope.launch {
+            doPreloadTrie(key, minKeyLength, retryCandidates)
+        }
+    }
+
+    private suspend fun doPreloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+        if (minKeyLength > 0 && key.length < minKeyLength) {
+            return
+        }
+        val words = wordDao.findCandidates(key, 200)
+        for (word in words) {
+            //Log.d(LOG_TAG, "PL => ${word.word}")
+            t9Trie.add(word.code, word.word)
+        }
+        if (retryCandidates) {
+            resolveCodeWord(key, 1, true)
+        }
+        t9Trie.prune(key, depth = 3)
     }
 
     private fun initializeWordsFirstTime() {

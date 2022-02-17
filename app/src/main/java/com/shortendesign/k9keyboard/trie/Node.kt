@@ -1,16 +1,25 @@
 package com.shortendesign.k9keyboard.trie
 
+import android.util.Log
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashSet
 
 open class Node (
     val key: Char?,
+    val parent: Node?
 )
 {
     val children = Array<Node?>(charSetSize()) { null }
-    internal val values = LinkedList<String>()
+    internal val values = TreeSet<Value>()
+
+    fun getFullKey(): String {
+        return fullKey(this)
+    }
 
     companion object {
+        private val LOG_TAG: String = "K9Word"
         var valueMap = HashMap<Char, Int>()
 
         fun charSetSize() = valueMap.keys.size
@@ -22,15 +31,16 @@ open class Node (
             }
         }
 
-        fun addKey(node: Node, key: String, value: String, curChar: Int = 0) {
+        fun addKey(node: Node, key: String, value: Value, curChar: Int = 0) {
             if (curChar == key.length) {
                 node.values.add(value)
             }
             else {
+                Log.d(LOG_TAG, "KEY: $key, curChar: $curChar")
                 val idx = valueMap[key[curChar]]!!
                 var child = node.children[idx]
                 if (child == null) {
-                    child = Node(key[curChar])
+                    child = Node(key[curChar], node)
                     node.children[idx] = child
                 }
                 addKey(child, key, value, curChar + 1)
@@ -60,9 +70,36 @@ open class Node (
                 }
             }
             else {
-                return node.values[0]
+                return node.values.elementAt(0).value
             }
             return null
+        }
+
+        fun fullKey(node: Node, currentKey: StringBuilder = java.lang.StringBuilder()): String {
+            if (node.parent != null) {
+                currentKey.append(node.key)
+                return fullKey(node.parent, currentKey)
+            }
+            return currentKey.reverse().toString()
+        }
+
+        fun collectValues(
+            nodes: Queue<Node>, values: SortedSet<Value>, count: Int = 1
+        ): SortedSet<Value> {
+            val nodesInQueue = nodes.size
+            for (i in 0 until nodesInQueue) {
+                val node = nodes.remove()
+                values.addAll(node.values)
+                node.children.forEach { child ->
+                    if (child != null) {
+                        nodes.add(child)
+                    }
+                }
+            }
+            if (values.size >= count || nodes.isEmpty()) {
+                return values
+            }
+            return collectValues(nodes, values, count)
         }
 
         fun prune(key: String, maxDepth: Int, nodes: Queue<Node>, curDepth: Int = 0) {
@@ -81,8 +118,10 @@ open class Node (
                             curDepth < key.length && index == valueMap[key[curDepth]] -> {
                                 nodes.add(child)
                             }
+                            // Do nothing if this is the top of the branch we want to keep
+                            node.getFullKey() == key -> return
                             // Otherwise we want to prune this part of the tree
-                            else -> {
+                            else  -> {
                                 node.children[index] = null
                             }
                         }

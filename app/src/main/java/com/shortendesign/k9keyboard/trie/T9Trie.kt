@@ -7,9 +7,9 @@ class T9Trie {
     var root: Node? = null
     var currentNode: Node? = null
 
-    fun add(key: String, value: String) {
+    fun add(key: String, value: String, weight: Int = 0) {
         val root = this.root ?: this.initRoot()
-        Node.addKey(root, key, value)
+        Node.addKey(root, key, Value(value, weight))
     }
 
     fun get(key: String): String? {
@@ -22,19 +22,8 @@ class T9Trie {
 
     fun getCandidates(key: String, count: Int = 1): List<String> {
         val node = find(key) ?: return emptyList()
-        val candidates = LinkedList<String>()
-        candidates.addAll(node.values.take(count))
-        if (candidates.count() < count) {
-            for (child in node.children) {
-                if (child != null) {
-                    candidates.addAll(child.values.take(count - candidates.count()))
-                }
-                if (candidates.count() == count) {
-                    break
-                }
-            }
-        }
-        return candidates
+        val values = Node.collectValues(LinkedBlockingQueue(listOf(node)), TreeSet(), count)
+        return values.map { value -> value.value }
     }
 
     fun find(key: String): Node? {
@@ -46,7 +35,7 @@ class T9Trie {
     }
 
     private fun initRoot(): Node {
-        val root = Node(null)
+        val root = Node(null, null)
         this.root = root
         return root
     }

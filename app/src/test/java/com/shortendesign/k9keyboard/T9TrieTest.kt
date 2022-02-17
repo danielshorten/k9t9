@@ -31,6 +31,16 @@ class T9TrieTest {
     }
 
     @Test
+    fun testGetFullKey() {
+        val trie = T9Trie()
+        Node.setSupportedChars("123456789")
+        trie.add("2333464", "bedding")
+        val node = trie.find("2333464")
+
+        assertEquals("2333464", node!!.getFullKey())
+    }
+
+    @Test
     fun testGetMissing() {
         val trie = T9Trie()
         Node.setSupportedChars("123456789")
@@ -40,7 +50,7 @@ class T9TrieTest {
     }
 
     @Test
-    fun testIterate() {
+    fun testGetCandidates() {
         val trie = T9Trie()
         Node.setSupportedChars("123456789")
 
@@ -50,10 +60,11 @@ class T9TrieTest {
         trie.add("233", "bed")
         trie.add("233", "add")
         trie.add("233", "bee")
-
-        val candidates = trie.getCandidates("23", 5)
+        trie.add("2333464", "bedding")
+        trie.prune("233", 3)
+        val candidates = trie.getCandidates("233", 5)
         assertEquals(
-            listOf("ad", "be", "bed", "add", "bee"),
+            listOf("bed", "add", "bee", "bedding"),
             candidates
         )
     }

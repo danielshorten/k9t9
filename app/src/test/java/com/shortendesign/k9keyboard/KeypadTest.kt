@@ -21,6 +21,12 @@ class KeypadTest {
     }
 
     @Test
+    fun getCodesForWordsWithSpecialCharacters() {
+        val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+        assertEquals(keypad.getCodeForWord("tip-off"), "8471633")
+    }
+
+    @Test
     fun getCodeForCapitalizedWord() {
         val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
         assertEquals(keypad.getCodeForWord("I'm"), "416")

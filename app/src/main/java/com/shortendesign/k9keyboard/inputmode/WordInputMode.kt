@@ -17,6 +17,7 @@ class WordInputMode(
     private var candidateIdx: Int = 0
     private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
+    private var lastResolvedCodeWord: String? = null
 
     val status: Status
         get() = this.currentStatus
@@ -56,17 +57,17 @@ class WordInputMode(
     }
 
     private fun addLetter(key: Key): KeyPressResult {
-        return state(true, codeWord = codeWord.toString() + key.code)
+        codeWord.append(key.code)
+        return state(true, codeWord = codeWord.toString())
     }
 
     private fun deleteLetter(): KeyPressResult {
         var consumed = false
-        var codeWord: String? = null
         if (isComposing()) {
-            codeWord = this.codeWord.take(this.codeWord.length - 1).toString()
+            codeWord.deleteAt(codeWord.length - 1)
             consumed = true
         }
-        return state(consumed, codeWord)
+        return state(consumed, codeWord.toString())
     }
 
     private fun addSpace(): KeyPressResult {
@@ -86,11 +87,18 @@ class WordInputMode(
         return state(true)
     }
 
-    private fun state(consumed: Boolean = true, codeWord: String? = null, word: String? = null): KeyPressResult {
+    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null): KeyPressResult {
+        var finalCodeWord: String? = codeWord
+        if (finalCodeWord!!.isEmpty()) {
+            finalCodeWord = this.codeWord.toString()
+            if (finalCodeWord.isEmpty()) {
+                finalCodeWord = null
+            }
+        }
         return KeyPressResult(
             consumed = consumed,
             cursorPosition = cursorPosition,
-            codeWord = codeWord ?: if (this.codeWord.isEmpty()) null else this.codeWord.toString(),
+            codeWord = finalCodeWord,
             word = word
         )
     }
@@ -110,11 +118,11 @@ class WordInputMode(
         return codeWord.isNotEmpty()
     }
 
-    fun resolveCodeWord(codeWord: String, candidates: List<String>): String? {
+    fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean = false): String? {
         if (!candidates.isEmpty()) {
             var candidateWord = when {
                 candidateIdx < candidates.count() -> candidates[candidateIdx]
-                candidateIdx >= candidates.count() && candidates.count() > 0 -> candidates[0]
+                candidateIdx >= candidates.count() -> candidates[0]
                 else -> null
             } ?: return null
             // Reset the candidate index if it's falling out of bounds
@@ -129,9 +137,14 @@ class WordInputMode(
             if (candidateWord.length > codeWord.length) {
                 candidateWord = candidateWord.substring(0, codeWord.length)
             }
+            lastResolvedCodeWord = codeWord
             return candidateWord
         }
-
+        // If this was the final chance to resolve the code word, and we couldn't, reset to the last
+        // resolved code word.
+        if (final && lastResolvedCodeWord != null) {
+            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), lastResolvedCodeWord!!)
+        }
         return null
     }
 }
