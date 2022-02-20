@@ -65,7 +65,7 @@ class WordInputMode(
         var consumed = false
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
-            consumed = true
+            consumed = codeWord.isNotEmpty()
         }
         return state(consumed, codeWord.toString())
     }

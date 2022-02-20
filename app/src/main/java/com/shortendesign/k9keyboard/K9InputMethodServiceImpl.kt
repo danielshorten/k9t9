@@ -19,7 +19,6 @@ import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
-import kotlin.collections.ArrayList
 
 
 class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
@@ -72,47 +71,48 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(LOG_TAG, "keyCode: $keyCode")
-        val mode = this.mode ?: return false
-        val result = mode.getKeyCodeResult(keyCode)
-        updateStatusIcon(mode.status)
+        var consumed = true
+        val mode = this.mode
+        if (mode != null) {
+            val result = mode.getKeyCodeResult(keyCode)
+            consumed = result?.consumed ?: false
+            updateStatusIcon(mode.status)
 
-        if (result != null) {
-            //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
-            if (!result.consumed) {
-                finishComposing()
-                // Delete or back
-                if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
-                    return if (cursorPosition > 0)
-                        inputConnection?.deleteSurroundingText(1, 0) ?: false
-                    else
-                        false
-                }
-            }
-            // If we get back a code word, we'll need to resolve it
-            when {
-                result.codeWord != null -> {
-                    isComposing = true
-                    val candidate = resolveCodeWord(result.codeWord, 1)
-
-                    scope.launch {
-                        preloadTrie(result.codeWord, 2, candidate == null)
+            if (result != null) {
+                //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
+                if (!result.consumed) {
+                    finishComposing()
+                    // Delete or back
+                    if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+                        consumed = if (cursorPosition > 0) {
+                            inputConnection?.deleteSurroundingText(1, 0)
+                            true
+                        } else
+                            false
                     }
                 }
-                result.word != null -> {
-                    // TODO: Support a delay for committing the word
-                    finishComposing()
-                    inputConnection?.commitText(result.word, 2)
-                }
-                else -> {
-                    finishComposing()
+                // If we get back a code word, we'll need to resolve it
+                when {
+                    result.codeWord != null -> {
+                        isComposing = true
+                        val candidate = resolveCodeWord(result.codeWord, 1)
+
+                        scope.launch {
+                            preloadTrie(result.codeWord, 2, candidate == null)
+                        }
+                    }
+                    result.word != null -> {
+                        // TODO: Support a delay for committing the word
+                        finishComposing()
+                        inputConnection?.commitText(result.word, 2)
+                    }
+                    else -> {
+                        finishComposing()
+                    }
                 }
             }
-
-            return result.consumed
         }
-        else {
-            return false
-        }
+        return consumed
     }
 
     private fun finishComposing() {
@@ -261,11 +261,13 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             for (chunk in lines.chunked(batchSize)) {
                 wordBatch.clear()
                 chunk.forEachIndexed { index, line ->
-                    //val parts = line.split(" ")
-                    //freq = parts[1].toFloat().toInt()
+                    val parts = line.split("\\s".toRegex())
                     wordBatch.add(
                         index,
-                        getWord(word = line, frequency = 1)
+                        getWord(
+                            word = parts[0],
+                            frequency = if (parts.size > 1) parts[1].toInt() else 1
+                        )
                     )
                 }
                 runBlocking {

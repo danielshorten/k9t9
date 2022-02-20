@@ -2,7 +2,10 @@
 ,
 ?
 !
+'
 -
+@
+$
 aardvark
 aardvarks
 aardvark's
@@ -10444,7 +10447,7 @@ campy
 cams
 camshaft
 camshafts
-can
+can 5
 canal
 canalisation
 canalisations
@@ -12241,6 +12244,7 @@ cheetahs
 chef
 chefs
 chef's
+Chelsey
 chelonian
 chemic
 chemical
@@ -18640,6 +18644,7 @@ danglers
 dangler's
 dangles
 dangling
+Daniel
 dank
 dankly
 dankness
@@ -18758,6 +18763,7 @@ daunts
 dauphin
 dauphine
 davenport
+David
 davit
 davits
 dawdle
@@ -24180,7 +24186,7 @@ dyspnoea
 dysprosium
 dystrophic
 dystrophy
-e's 
+e's
 each
 eager
 eagerly
@@ -24706,6 +24712,7 @@ elaboration
 elaborations
 elaborative
 elaborators
+Elaine
 eland
 elapid
 elapse
@@ -28116,7 +28123,7 @@ eyewitness's
 eying
 eyrie
 eyrir
-f's 
+f's
 fab
 fable
 fabled
@@ -37600,6 +37607,7 @@ hysterical
 hysterically
 hysterics
 hysteron
+I
 I'd
 I'll
 I'm
@@ -43348,6 +43356,7 @@ laundry
 laundryman
 laundrymen
 laundrywoman
+Laura
 lauraceous
 laureate
 laureates
@@ -49908,7 +49917,7 @@ nixed
 nixes
 nixing
 nm
-no
+no 4
 nobble
 nobelium
 nobilities
@@ -50939,7 +50948,7 @@ omnisciently
 omnivore
 omnivorous
 omnivorously
-on
+on 5
 once
 oncology
 oncoming
@@ -63023,6 +63032,7 @@ saps
 sapsago
 sapsucker
 sapwood
+Sarah
 sarcasm
 sarcasm's
 sarcasms
@@ -66863,7 +66873,7 @@ somatic
 somatically
 sombre
 sombrero
-some
+some 5
 somebody
 somebody's
 someday
@@ -73544,6 +73554,7 @@ travertine
 travesties
 travesty
 travesty's
+Travis
 travois
 trawl
 trawler
@@ -77663,7 +77674,6 @@ warbled
 warbler
 warbles
 warbling
-war bonnet
 ward
 warded
 warden
@@ -77885,7 +77895,6 @@ watersheds
 waterside
 waterspout
 watertight
-water tower
 waterway
 waterway's
 waterways
@@ -78406,7 +78415,6 @@ whitewash
 whitewashed
 whitewasher
 whitewashing
-white water
 whitewood
 whitey
 whither
@@ -78713,7 +78721,6 @@ wines
 wineskin
 wing
 wingback
-wing beat
 winged
 winger
 wingers
@@ -78826,7 +78833,6 @@ wisent
 wiser
 wises
 wisest
-wise woman
 wish
 wishbone
 wished
