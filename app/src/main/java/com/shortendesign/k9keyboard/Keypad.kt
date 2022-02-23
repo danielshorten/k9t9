@@ -28,6 +28,11 @@ class Keypad(
         return false
     }
 
+    fun getDigit(key: Key): Char? {
+        val letters = letterLayout[key] ?: return null
+        return if (letters.isNotEmpty() && letters[0].isDigit()) letters[0] else null
+    }
+
     fun isDelete(key: Key): Boolean {
         return key == Key.BACK
     }

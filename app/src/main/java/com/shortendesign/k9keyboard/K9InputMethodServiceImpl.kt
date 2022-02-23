@@ -12,6 +12,9 @@ import com.shortendesign.k9keyboard.dao.WordDao
 import com.shortendesign.k9keyboard.db.AppDatabase
 import com.shortendesign.k9keyboard.entity.Setting
 import com.shortendesign.k9keyboard.entity.Word
+import com.shortendesign.k9keyboard.inputmode.InputMode
+import com.shortendesign.k9keyboard.inputmode.K9InputType
+import com.shortendesign.k9keyboard.inputmode.NumberInputMode
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
@@ -23,7 +26,7 @@ import kotlinx.coroutines.*
 
 class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val LOG_TAG: String = "K9Input"
-    private var mode: WordInputMode? = null
+    private var mode: InputMode? = null
     private lateinit var db: AppDatabase
     private lateinit var wordDao: WordDao
     private lateinit var settingDao: SettingDao
@@ -36,6 +39,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private var cursorPosition: Int = 0
     private var modeStatus = Status.WORD_CAP
     private val t9Trie = T9Trie()
+    private var currentMode = K9InputType.WORD.idx
 
     override fun onCreate() {
         super.onCreate()
@@ -81,38 +85,51 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             if (result != null) {
                 //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
                 if (!result.consumed) {
-                    finishComposing()
-                    // Delete or back
-                    if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
-                        consumed = if (cursorPosition > 0) {
-                            inputConnection?.deleteSurroundingText(1, 0)
-                            true
-                        } else
-                            false
-                    }
+                    consumed = handleUnconsumedKeyEvent(event)
                 }
-                // If we get back a code word, we'll need to resolve it
-                when {
-                    result.codeWord != null -> {
-                        isComposing = true
-                        val candidate = resolveCodeWord(result.codeWord, 1)
-
-                        scope.launch {
-                            preloadTrie(result.codeWord, 2, candidate == null)
-                        }
-                    }
-                    result.word != null -> {
-                        // TODO: Support a delay for committing the word
-                        finishComposing()
-                        inputConnection?.commitText(result.word, 2)
-                    }
-                    else -> {
-                        finishComposing()
-                    }
-                }
+                handleInputModeResult(result)
             }
         }
         return consumed
+    }
+
+    private fun handleUnconsumedKeyEvent(event: KeyEvent?): Boolean {
+        // Delete or back
+        if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+            finishComposing()
+            return if (cursorPosition > 0) {
+                inputConnection?.deleteSurroundingText(1, 0)
+                true
+            } else
+                false
+        }
+        else if (event?.keyCode == KeyEvent.KEYCODE_POUND) {
+            switchToNextInputMode()
+            return true
+        }
+        return false
+    }
+
+    private fun handleInputModeResult(result: KeyPressResult) {
+        // If we get back a code word, we'll need to resolve it
+        when {
+            result.codeWord != null -> {
+                isComposing = true
+                val candidate = resolveCodeWord(result.codeWord, 1)
+
+                scope.launch {
+                    preloadTrie(result.codeWord, 2, candidate == null)
+                }
+            }
+            result.word != null -> {
+                // TODO: Support a delay for committing the word
+                finishComposing()
+                inputConnection?.commitText(result.word, 2)
+            }
+            else -> {
+                finishComposing()
+            }
+        }
     }
 
     private fun finishComposing() {
@@ -138,7 +155,6 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
         cursorPosition = newSelEnd
-        mode?.setCursorPosition(newSelEnd)
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
 
@@ -152,11 +168,16 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
-        val mode = WordInputMode(
-            keypad = keypad,
-        )
-        this.mode = mode
-        mode.setCursorPosition(attribute!!.initialSelStart.coerceAtLeast(attribute.initialSelEnd))
+        val inputType =
+            if (attribute != null)
+                attribute.inputType and InputType.TYPE_MASK_CLASS
+            else InputType.TYPE_CLASS_TEXT
+        val mode = when (inputType) {
+            InputType.TYPE_CLASS_NUMBER,
+            InputType.TYPE_CLASS_DATETIME,
+            InputType.TYPE_CLASS_PHONE -> enableInputMode(K9InputType.NUMBER)
+            else -> enableInputMode(K9InputType.WORD)
+        }
         updateStatusIcon(mode.status)
     }
 
@@ -189,11 +210,35 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         locale = locale
     )
 
+    private fun switchToNextInputMode() {
+        enableInputMode(
+            K9InputType.values()[
+                if (currentMode == K9InputType.values().size - 1)
+                    0
+                else
+                    currentMode + 1
+            ]
+        )
+    }
+
+    private fun enableInputMode(type: K9InputType): InputMode {
+        currentMode = type.idx
+        val mode = when (type) {
+            K9InputType.NUMBER -> NumberInputMode(keypad)
+            K9InputType.WORD -> WordInputMode(keypad)
+        }
+        this.mode = mode
+        updateStatusIcon(mode.status)
+        return mode
+    }
+
     private fun updateStatusIcon(status: Status) {
         if (status != modeStatus) {
+            modeStatus = status
             showStatusIcon(
                 when (status) {
                     Status.WORD_CAP -> R.drawable.ime_en_lang_single
+                    Status.NUM -> R.drawable.ime_number
                     else -> 0
                 }
             )
