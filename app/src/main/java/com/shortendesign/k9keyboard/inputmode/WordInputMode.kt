@@ -10,7 +10,7 @@ import java.lang.StringBuilder
 
 class WordInputMode(
     private val keypad: Keypad,
-) {
+): InputMode {
     private val LOG_TAG: String = "K9Word"
     private var cursorPosition: Int = 0
     val codeWord = StringBuilder()
@@ -19,14 +19,14 @@ class WordInputMode(
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
 
-    val status: Status
+    override val status: Status
         get() = this.currentStatus
 
     fun setCursorPosition(position: Int) {
         cursorPosition = position
     }
 
-    fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
+    override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key)
     }
@@ -118,7 +118,7 @@ class WordInputMode(
         return codeWord.isNotEmpty()
     }
 
-    fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean = false): String? {
+    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
         if (!candidates.isEmpty()) {
             var candidateWord = when {
                 candidateIdx < candidates.count() -> candidates[candidateIdx]
