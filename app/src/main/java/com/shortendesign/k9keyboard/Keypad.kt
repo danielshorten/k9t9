@@ -2,6 +2,7 @@ package com.shortendesign.k9keyboard
 
 import com.shortendesign.k9keyboard.util.Key
 import com.shortendesign.k9keyboard.util.LetterLayout
+import com.shortendesign.k9keyboard.util.MissingLetterCode
 import java.lang.StringBuilder
 
 class Keypad(
@@ -52,7 +53,9 @@ class Keypad(
     fun getCodeForWord(word: String): String {
         val builder = StringBuilder()
         for (letter in word) {
-            builder.append(codeForLetter(letter))
+            val code = codeForLetter(letter)
+                ?: throw MissingLetterCode("No code found for '$letter'")
+            builder.append(code)
         }
         return builder.toString()
     }
