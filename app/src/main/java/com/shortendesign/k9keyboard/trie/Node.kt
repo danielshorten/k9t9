@@ -3,8 +3,6 @@ package com.shortendesign.k9keyboard.trie
 import android.util.Log
 import java.util.*
 import kotlin.collections.HashMap
-import kotlin.collections.HashSet
-import kotlin.collections.LinkedHashSet
 
 open class Node (
     val key: Char?,
@@ -36,7 +34,7 @@ open class Node (
                 node.values.add(value)
             }
             else {
-                Log.d(LOG_TAG, "KEY: $key, curChar: $curChar")
+                //Log.d(LOG_TAG, "KEY: $key, curChar: $curChar")
                 val idx = valueMap[key[curChar]]!!
                 var child = node.children[idx]
                 if (child == null) {
@@ -84,12 +82,17 @@ open class Node (
         }
 
         fun collectValues(
-            nodes: Queue<Node>, values: SortedSet<Value>, count: Int = 1
+            nodes: Queue<Node>, values: SortedSet<Value>, count: Int = 1, maxLength: Int = 0
         ): SortedSet<Value> {
             val nodesInQueue = nodes.size
             for (i in 0 until nodesInQueue) {
                 val node = nodes.remove()
-                values.addAll(node.values)
+                val nodeValues =
+                    if (maxLength > 0) TreeSet(node.values.map { value ->
+                        Value(value.value.take(maxLength), value.weight)
+                    })
+                    else node.values
+                values.addAll(nodeValues)
                 node.children.forEach { child ->
                     if (child != null) {
                         nodes.add(child)
@@ -99,7 +102,7 @@ open class Node (
             if (values.size >= count || nodes.isEmpty()) {
                 return values
             }
-            return collectValues(nodes, values, count)
+            return collectValues(nodes, values, count, maxLength)
         }
 
         fun prune(key: String, maxDepth: Int, nodes: Queue<Node>, curDepth: Int = 0) {

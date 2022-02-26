@@ -61,11 +61,19 @@ class T9TrieTest {
         trie.add("233", "add")
         trie.add("233", "bee")
         trie.add("2333464", "bedding")
+        trie.add("233333", "bedded")
         trie.prune("233", 3)
+
         val candidates = trie.getCandidates("233", 5)
+        val candidatesMaxLength = trie.getCandidates("233", 5, 3)
+
         assertEquals(
-            listOf("bed", "add", "bee", "bedding"),
+            listOf("bed", "add", "bee", "bedded", "bedding"),
             candidates
+        )
+        assertEquals(
+            listOf("bed", "add", "bee"),
+            candidatesMaxLength
         )
     }
 

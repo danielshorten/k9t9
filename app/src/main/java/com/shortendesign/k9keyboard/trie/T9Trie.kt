@@ -20,9 +20,9 @@ class T9Trie {
         Node.prune(key, depth, LinkedBlockingQueue<Node>(listOf(root)))
     }
 
-    fun getCandidates(key: String, count: Int = 1): List<String> {
+    fun getCandidates(key: String, count: Int = 1, maxLength: Int = 0): List<String> {
         val node = find(key) ?: return emptyList()
-        val values = Node.collectValues(LinkedBlockingQueue(listOf(node)), TreeSet(), count)
+        val values = Node.collectValues(LinkedBlockingQueue(listOf(node)), TreeSet(), count, maxLength)
         return values.map { value -> value.value }
     }
 
