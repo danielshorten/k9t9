@@ -1,11 +1,11 @@
-.
-,
-?
-!
-'
--
-@
-$
+. 10
+, 9
+? 8
+! 7
+' 6
+- 5
+@ 4
+$ 3
 aardvark
 aardvarks
 aardvark's
@@ -218,6 +218,7 @@ abraded
 abrader
 abrades
 abrading
+Abraham
 abrasion
 abrasions
 abrasion's
@@ -10274,6 +10275,7 @@ calculus
 caldarium
 caldera
 caldron
+Caleb
 calefactory
 calendar
 calendared
@@ -35882,7 +35884,7 @@ herding
 herds
 herdsman
 herdsmen
-here
+here 5
 hereabout
 hereabouts
 hereafter

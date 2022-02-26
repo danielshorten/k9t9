@@ -37,7 +37,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private var isComposing = false
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
-    private var modeStatus = Status.WORD_CAP
+    private var modeStatus: Status? = null
     private val t9Trie = T9Trie()
     private var currentMode = K9InputType.WORD.idx
 
@@ -49,15 +49,9 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         initializeWordsFirstTime()
     }
 
-    override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
-        showStatusIcon(R.drawable.ime_en_lang_single)
-        cursorPosition = info?.initialSelEnd ?: 0
-
-    }
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(LOG_TAG, "keyCode: $keyCode")
-        var consumed = true
+        var consumed = false
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
@@ -122,7 +116,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
-        val candidates = t9Trie.getCandidates(codeWord, 10)
+        val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
         Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
@@ -150,6 +144,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
+        cursorPosition = info?.initialSelEnd ?: 0
 
         when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
             InputType.TYPE_CLASS_NUMBER ->
@@ -180,6 +175,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             InputType.TYPE_CLASS_NUMBER,
             InputType.TYPE_CLASS_DATETIME,
             InputType.TYPE_CLASS_PHONE -> enableInputMode(K9InputType.NUMBER)
+            0 -> return
             else -> enableInputMode(K9InputType.WORD)
         }
         updateStatusIcon(mode.status)
@@ -190,6 +186,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         hideStatusIcon()
         mode = null
         cursorPosition = 0
+        modeStatus = null
     }
 
     override suspend fun findCandidates(word: String): List<Word> {
@@ -278,7 +275,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         val words = wordDao.findCandidates(key, 200)
         for (word in words) {
             //Log.d(LOG_TAG, "PL => ${word.word}")
-            t9Trie.add(word.code, word.word)
+            t9Trie.add(word.code, word.word, word.frequency)
         }
         if (retryCandidates) {
             resolveCodeWord(key, 1, true)

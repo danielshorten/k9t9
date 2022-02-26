@@ -89,7 +89,7 @@ open class Node (
                 val node = nodes.remove()
                 val nodeValues =
                     if (maxLength > 0) TreeSet(node.values.map { value ->
-                        Value(value.value.take(maxLength), value.weight)
+                        Value(value.value.take(maxLength), value.weight - (value.value.length - maxLength))
                     })
                     else node.values
                 values.addAll(nodeValues)
