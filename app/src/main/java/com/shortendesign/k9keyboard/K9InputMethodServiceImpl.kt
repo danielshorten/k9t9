@@ -53,24 +53,6 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         showStatusIcon(R.drawable.ime_en_lang_single)
         cursorPosition = info?.initialSelEnd ?: 0
 
-        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
-            InputType.TYPE_CLASS_NUMBER ->
-                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
-            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
-                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
-            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
-                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
-            InputType.TYPE_CLASS_TEXT ->
-                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
-            else ->
-                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
-        }
-        if (this.t9Trie.root == null) {
-            Node.setSupportedChars("123456789")
-            scope.launch {
-                initT9Trie()
-            }
-        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -166,12 +148,34 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         return candidatesView
     }
 
-    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+    override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
+
+        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
+            InputType.TYPE_CLASS_NUMBER ->
+                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
+            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
+                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
+            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
+                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
+            InputType.TYPE_CLASS_TEXT ->
+                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
+            else ->
+                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
+        }
+
         val inputType =
-            if (attribute != null)
-                attribute.inputType and InputType.TYPE_MASK_CLASS
+            if (info != null)
+                info.inputType and InputType.TYPE_MASK_CLASS
             else InputType.TYPE_CLASS_TEXT
+
+        if (this.t9Trie.root == null) {
+            Node.setSupportedChars("123456789")
+            scope.launch {
+                initT9Trie()
+            }
+        }
+
         val mode = when (inputType) {
             InputType.TYPE_CLASS_NUMBER,
             InputType.TYPE_CLASS_DATETIME,
@@ -184,7 +188,8 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     override fun onFinishInput() {
         super.onFinishInput()
         hideStatusIcon()
-        this.mode = null
+        mode = null
+        cursorPosition = 0
     }
 
     override suspend fun findCandidates(word: String): List<Word> {
