@@ -23,6 +23,7 @@ import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
+import java.util.concurrent.ArrayBlockingQueue
 
 
 class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
@@ -35,6 +36,8 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
     private var preloadJob: Job? = null
+    private val preloadsToCache = 3
+    private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
     private var isComposing = false
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
@@ -56,6 +59,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
+            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
@@ -118,7 +122,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
         val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
-        //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
+        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate
@@ -188,6 +192,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         mode = null
         cursorPosition = 0
         modeStatus = null
+        t9Trie.prune("a", depth = 3)
     }
 
     override suspend fun findCandidates(word: String): List<Word> {
@@ -271,8 +276,19 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     private suspend fun doPreloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+        // Only preload if the key length meets the minimum threshold
         if (minKeyLength > 0 && key.length < minKeyLength) {
             return
+        }
+        // If we've preloaded for this key recently, skip
+        if (lastNPreloads.contains(key)) {
+            return
+        }
+        else {
+            if (lastNPreloads.size == preloadsToCache) {
+                lastNPreloads.remove()
+            }
+            lastNPreloads.add(key)
         }
         val words = wordDao.findCandidates(key, 200)
         for (word in words) {
@@ -282,7 +298,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         if (retryCandidates) {
             resolveCodeWord(key, 1, true)
         }
-        t9Trie.prune(key, depth = 3)
+        //t9Trie.prune(key, depth = 3)
     }
 
     private fun initializeWordsFirstTime() {
@@ -291,21 +307,20 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         scope.launch {
             val setting = settingDao.getByKey("initialized")
             if (setting == null) {
-                //Log.d(LOG_TAG,"Initializing word database...")
+                Log.d(LOG_TAG,"Initializing word database...")
                 initializeWords()
                 Setting.set("initialized", "t", settingDao)
             }
             else {
-                //Log.d(LOG_TAG, "Word database already initialized")
+                Log.d(LOG_TAG, "Word database already initialized")
             }
         }
     }
 
     private fun initializeWords() {
         val file_name = "t9_words.txt"
-        val batchSize = 500
+        val batchSize = 1000
         val wordBatch = ArrayList<Word>(batchSize)
-        var freq: Int
         application.assets.open(file_name).bufferedReader().useLines { lines ->
             for (chunk in lines.chunked(batchSize)) {
                 wordBatch.clear()

@@ -6,6 +6,7 @@
 - 5
 @ 4
 $ 3
+'s
 aardvark
 aardvarks
 aardvark's
@@ -14332,7 +14333,7 @@ combustions
 combustive
 combustor
 combustors
-come
+come 2
 comeback
 comedian
 comedians
@@ -23176,7 +23177,7 @@ donating
 donation
 donations
 donator
-done
+done 2
 doneness
 dong
 donga
@@ -29086,7 +29087,7 @@ feudatory
 feudist
 feuds
 feud's
-fever
+fever 5
 fevered
 feverfew
 fevering
@@ -30580,7 +30581,7 @@ foppish
 foppishly
 foppishness
 fops
-for
+for 5
 forage
 foraged
 forager
@@ -33276,7 +33277,7 @@ gnostic
 gnosticism
 gnu
 gnus
-go
+go 3
 goad
 goaded
 goading
@@ -36674,7 +36675,7 @@ hoots
 hoover
 hooves
 hop
-hope
+hope 5
 hoped
 hopeful
 hopefully
@@ -36965,7 +36966,7 @@ hovered
 hoverer
 hovering
 hovers
-how
+how 5
 howbeit
 howdah
 howdy
@@ -37609,7 +37610,7 @@ hysterical
 hysterically
 hysterics
 hysteron
-I
+I 5
 I'd
 I'll
 I'm
@@ -38594,7 +38595,7 @@ impute
 imputed
 imputes
 imputing
-in
+in 2
 inabilities
 inability
 inaccessibility
@@ -42314,7 +42315,7 @@ keenest
 keening
 keenly
 keenness
-keep
+keep 3
 keeper
 keepers
 keeping
@@ -44962,7 +44963,7 @@ louvre
 louvred
 lovable
 lovably
-love
+love 5
 loveable
 lovebird
 lovebirds
@@ -49775,7 +49776,7 @@ nibblers
 nibbles
 nibbling
 nibs
-nice
+nice 5
 nicely
 niceness
 nicer
@@ -50224,7 +50225,7 @@ novice's
 novitiate
 novitiates
 novocaine
-now
+now 5
 nowadays
 nowhere
 nowhither
@@ -51167,7 +51168,7 @@ opulent
 opulently
 opus
 opuses
-or
+or 3
 oracle
 oracles
 oracle's
@@ -61206,7 +61207,7 @@ responsibly
 responsive
 responsively
 responsiveness
-rest
+rest 5
 restage
 restart
 restarted
@@ -62765,7 +62766,7 @@ sago
 sags
 saguaro
 sahib
-said
+said 5
 sail
 sailable
 sailboard
@@ -64060,7 +64061,7 @@ sedulous
 sedulously
 sedulousness
 sedum
-see
+see 5
 seed
 seedbed
 seedbeds
@@ -77772,7 +77773,7 @@ wartimes
 warts
 warty
 wary
-was
+was 3
 wash
 washable
 washbasin
