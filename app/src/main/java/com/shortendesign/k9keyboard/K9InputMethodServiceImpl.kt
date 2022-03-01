@@ -117,7 +117,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
         val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
-        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
+        //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate
@@ -129,7 +129,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
-        Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
+        //Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
         cursorPosition = newSelEnd
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
@@ -146,18 +146,18 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         inputConnection = currentInputConnection
         cursorPosition = info?.initialSelEnd ?: 0
 
-        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
-            InputType.TYPE_CLASS_NUMBER ->
-                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
-            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
-                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
-            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
-                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
-            InputType.TYPE_CLASS_TEXT ->
-                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
-            else ->
-                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
-        }
+//        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
+//            InputType.TYPE_CLASS_NUMBER ->
+//                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
+//            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
+//                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
+//            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
+//                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
+//            InputType.TYPE_CLASS_TEXT ->
+//                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
+//            else ->
+//                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
+//        }
 
         val inputType =
             if (info != null)
@@ -247,16 +247,17 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
+    // TODO: Can this be merged with doPreloadTrie?
     private suspend fun initT9Trie() {
-        Log.d(LOG_TAG, "Initializing T9 trie")
+        //Log.d(LOG_TAG, "Initializing T9 trie")
         t9Trie.clear()
         for (char in "123456789") {
-            Log.d(LOG_TAG, "Finding candidates for '$char'")
+            //Log.d(LOG_TAG, "Finding candidates for '$char'")
             val words = wordDao.findCandidates(char.toString(), 50)
-            Log.d(LOG_TAG, "Found '${words.count()}'")
+            //Log.d(LOG_TAG, "Found '${words.count()}'")
             for (word in words) {
                 //Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
-                t9Trie.add(word.code, word.word)
+                t9Trie.add(word.code, word.word, word.frequency)
             }
         }
     }
@@ -274,7 +275,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
         val words = wordDao.findCandidates(key, 200)
         for (word in words) {
-            //Log.d(LOG_TAG, "PL => ${word.word}")
+            //Log.d(LOG_TAG, "PL => ${word.word}: ${word.frequency}")
             t9Trie.add(word.code, word.word, word.frequency)
         }
         if (retryCandidates) {
@@ -285,16 +286,16 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     private fun initializeWordsFirstTime() {
         // TODO: Enumerate the settings keys
-        Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
+        //Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
         scope.launch {
             val setting = settingDao.getByKey("initialized")
             if (setting == null) {
-                Log.d(LOG_TAG,"Initializing word database...")
+                //Log.d(LOG_TAG,"Initializing word database...")
                 initializeWords()
                 Setting.set("initialized", "t", settingDao)
             }
             else {
-                Log.d(LOG_TAG, "Word database already initialized")
+                //Log.d(LOG_TAG, "Word database already initialized")
             }
         }
     }
@@ -313,7 +314,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
                         index,
                         getWord(
                             word = parts[0],
-                            frequency = if (parts.size > 1) parts[1].toInt() else 1
+                            frequency = if (parts.size > 1) parts[1].toInt() else 0
                         )
                     )
                 }

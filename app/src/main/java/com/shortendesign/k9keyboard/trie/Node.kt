@@ -89,7 +89,9 @@ open class Node (
                 val node = nodes.remove()
                 val nodeValues =
                     if (maxLength > 0) TreeSet(node.values.map { value ->
-                        Value(value.value.take(maxLength), value.weight - (value.value.length - maxLength))
+//                        Log.d("K9Input", "${value.value}:: ${value.weight}")
+                          Value(value.value.take(maxLength), value.weight - (value.value.length - maxLength))
+//                        Value(value.value.take(maxLength), value.weight)
                     })
                     else node.values
                 values.addAll(nodeValues)
