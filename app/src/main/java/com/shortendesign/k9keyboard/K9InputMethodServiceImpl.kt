@@ -20,6 +20,7 @@ import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
 import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
+import com.shortendesign.k9keyboard.util.MissingLetterCode
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
 
@@ -258,7 +259,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             val words = wordDao.findCandidates(char.toString(), 50)
             Log.d(LOG_TAG, "Found '${words.count()}'")
             for (word in words) {
-                //Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
+                Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
                 t9Trie.add(word.code, word.word)
             }
         }
@@ -277,7 +278,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
         val words = wordDao.findCandidates(key, 200)
         for (word in words) {
-            //Log.d(LOG_TAG, "PL => ${word.word}")
+            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}")
             t9Trie.add(word.code, word.word)
         }
         if (retryCandidates) {
@@ -310,15 +311,22 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         application.assets.open(file_name).bufferedReader().useLines { lines ->
             for (chunk in lines.chunked(batchSize)) {
                 wordBatch.clear()
-                chunk.forEachIndexed { index, line ->
+                var arrayListIndex = 0
+                chunk.forEach { line ->
                     val parts = line.split("\\s".toRegex())
-                    wordBatch.add(
-                        index,
-                        getWord(
-                            word = parts[0],
-                            frequency = if (parts.size > 1) parts[1].toInt() else 1
+                    try {
+                        wordBatch.add(
+                            arrayListIndex,
+                            getWord(
+                                word = parts[0],
+                                frequency = if (parts.size > 1) parts[1].toInt() else 1
+                            )
                         )
-                    )
+                        arrayListIndex++
+                    }
+                    catch (ex: MissingLetterCode) {
+                        Log.w(LOG_TAG, "Problem adding ${parts[0]}: " + ex.message)
+                    }
                 }
                 runBlocking {
                     wordDao.insert(*wordBatch.toTypedArray())
