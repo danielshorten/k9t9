@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard.trie
 
+import android.util.Log
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -20,10 +21,13 @@ class T9Trie {
         Node.prune(key, depth, LinkedBlockingQueue<Node>(listOf(root)))
     }
 
-    fun getCandidates(key: String, count: Int = 1): List<String> {
+    fun getCandidates(key: String, count: Int = 1, maxLength: Int = 0): List<String> {
+        //Log.d("K9Input", "getCandidates()")
         val node = find(key) ?: return emptyList()
-        val values = Node.collectValues(LinkedBlockingQueue(listOf(node)), TreeSet(), count)
-        return values.map { value -> value.value }
+        val values = Node.collectValues(LinkedBlockingQueue(listOf(node)), TreeSet(), count, maxLength)
+        val sortedValues = values.sortedBy{ -it.weight}
+        //Log.d("K9Input", "${sortedValues.map { value -> value.weight }}")
+        return sortedValues.map { value -> value.value }
     }
 
     fun find(key: String): Node? {

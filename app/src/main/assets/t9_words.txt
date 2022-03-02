@@ -1,11 +1,12 @@
-.
-,
-?
-!
-'
--
-@
-$
+. 10
+, 9
+? 8
+! 7
+' 6
+- 5
+@ 4
+$ 3
+'s
 aardvark
 aardvarks
 aardvark's
@@ -218,6 +219,7 @@ abraded
 abrader
 abrades
 abrading
+Abraham
 abrasion
 abrasions
 abrasion's
@@ -4123,7 +4125,7 @@ arsines
 arsis
 arson
 arsonist
-art
+art 3
 arte
 artefact
 artefacts
@@ -6264,7 +6266,7 @@ bazaar's
 bazooka
 bazookas
 bdellium
-be
+be 3
 beach
 beachcomber
 beachcombers
@@ -10274,6 +10276,7 @@ calculus
 caldarium
 caldera
 caldron
+Caleb
 calefactory
 calendar
 calendared
@@ -14330,7 +14333,7 @@ combustions
 combustive
 combustor
 combustors
-come
+come 2
 comeback
 comedian
 comedians
@@ -14377,7 +14380,7 @@ comicality
 comically
 comics
 comic's
-coming
+coming 3
 comings
 comitia
 comity
@@ -23174,7 +23177,7 @@ donating
 donation
 donations
 donator
-done
+done 2
 doneness
 dong
 donga
@@ -24290,7 +24293,7 @@ easements
 easement's
 easer
 eases
-easier
+easier 3
 easiest
 easily
 easiness
@@ -29084,7 +29087,7 @@ feudatory
 feudist
 feuds
 feud's
-fever
+fever 5
 fevered
 feverfew
 fevering
@@ -30578,7 +30581,7 @@ foppish
 foppishly
 foppishness
 fops
-for
+for 5
 forage
 foraged
 forager
@@ -33274,7 +33277,7 @@ gnostic
 gnosticism
 gnu
 gnus
-go
+go 3
 goad
 goaded
 goading
@@ -33392,7 +33395,7 @@ gondola
 gondolas
 gondolier
 gondoliers
-gone
+gone 4
 goner
 gonfalon
 gong
@@ -33402,7 +33405,7 @@ gonococcus
 gonorrhoea
 gonorrhoeal
 goober
-good
+good 3
 goodbye
 goodbyes
 goodbye's
@@ -35038,7 +35041,7 @@ happiest
 happily
 happiness
 happing
-happy
+happy 3
 harangue
 harangued
 haranguer
@@ -35250,7 +35253,7 @@ hastily
 hastiness
 hasting
 hasty
-hat
+hat 3
 hatband
 hatbox
 hatch
@@ -35882,7 +35885,7 @@ herding
 herds
 herdsman
 herdsmen
-here
+here 5
 hereabout
 hereabouts
 hereafter
@@ -36217,7 +36220,7 @@ hires
 hiring
 hirsute
 hirsuteness
-his
+his 3
 hispid
 hiss
 hissed
@@ -36440,7 +36443,7 @@ holytide
 homage
 hombre
 homburg
-home
+home 5
 homebody
 homebound
 homebred
@@ -36672,7 +36675,7 @@ hoots
 hoover
 hooves
 hop
-hope
+hope 5
 hoped
 hopeful
 hopefully
@@ -36963,7 +36966,7 @@ hovered
 hoverer
 hovering
 hovers
-how
+how 5
 howbeit
 howdah
 howdy
@@ -37607,7 +37610,7 @@ hysterical
 hysterically
 hysterics
 hysteron
-I
+I 5
 I'd
 I'll
 I'm
@@ -38592,7 +38595,7 @@ impute
 imputed
 imputes
 imputing
-in
+in 2
 inabilities
 inability
 inaccessibility
@@ -42312,7 +42315,7 @@ keenest
 keening
 keenly
 keenness
-keep
+keep 3
 keeper
 keepers
 keeping
@@ -44960,7 +44963,7 @@ louvre
 louvred
 lovable
 lovably
-love
+love 5
 loveable
 lovebird
 lovebirds
@@ -49709,7 +49712,7 @@ never
 nevermore
 nevertheless
 nevus
-new
+new 3
 newborn
 newborns
 newcomer
@@ -49773,7 +49776,7 @@ nibblers
 nibbles
 nibbling
 nibs
-nice
+nice 5
 nicely
 niceness
 nicer
@@ -50222,7 +50225,7 @@ novice's
 novitiate
 novitiates
 novocaine
-now
+now 5
 nowadays
 nowhere
 nowhither
@@ -51165,7 +51168,7 @@ opulent
 opulently
 opus
 opuses
-or
+or 3
 oracle
 oracles
 oracle's
@@ -51455,7 +51458,7 @@ oust
 ousted
 ouster
 ousting
-out
+out 3
 outage
 outages
 outage's
@@ -61204,7 +61207,7 @@ responsibly
 responsive
 responsively
 responsiveness
-rest
+rest 5
 restage
 restart
 restarted
@@ -62553,7 +62556,7 @@ rumpling
 rumps
 rumpus
 rumrunner
-run
+run 3
 runabout
 runabouts
 runaway
@@ -62763,7 +62766,7 @@ sago
 sags
 saguaro
 sahib
-said
+said 5
 sail
 sailable
 sailboard
@@ -64058,7 +64061,7 @@ sedulous
 sedulously
 sedulousness
 sedum
-see
+see 5
 seed
 seedbed
 seedbeds
@@ -77770,7 +77773,7 @@ wartimes
 warts
 warty
 wary
-was
+was 3
 wash
 washable
 washbasin
@@ -77949,7 +77952,7 @@ waxwings
 waxwork
 waxworks
 waxy
-way
+way 3
 way's
 waybill
 wayfarer

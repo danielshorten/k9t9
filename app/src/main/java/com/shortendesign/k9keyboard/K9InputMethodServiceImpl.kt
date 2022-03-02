@@ -23,6 +23,7 @@ import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
+import java.util.concurrent.ArrayBlockingQueue
 
 
 class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
@@ -35,10 +36,12 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
     private var preloadJob: Job? = null
+    private val preloadsToCache = 3
+    private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
     private var isComposing = false
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
-    private var modeStatus = Status.WORD_CAP
+    private var modeStatus: Status? = null
     private val t9Trie = T9Trie()
     private var currentMode = K9InputType.WORD.idx
 
@@ -50,18 +53,13 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         initializeWordsFirstTime()
     }
 
-    override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
-        showStatusIcon(R.drawable.ime_en_lang_single)
-        cursorPosition = info?.initialSelEnd ?: 0
-
-    }
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(LOG_TAG, "keyCode: $keyCode")
-        var consumed = true
+        var consumed = false
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
+            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
@@ -123,7 +121,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
-        val candidates = t9Trie.getCandidates(codeWord, 10)
+        val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
         Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
@@ -136,7 +134,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
-        Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
+        //Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
         cursorPosition = newSelEnd
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
@@ -151,19 +149,20 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
+        cursorPosition = info?.initialSelEnd ?: 0
 
-        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
-            InputType.TYPE_CLASS_NUMBER ->
-                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
-            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
-                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
-            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
-                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
-            InputType.TYPE_CLASS_TEXT ->
-                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
-            else ->
-                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
-        }
+//        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
+//            InputType.TYPE_CLASS_NUMBER ->
+//                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
+//            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
+//                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
+//            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
+//                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
+//            InputType.TYPE_CLASS_TEXT ->
+//                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
+//            else ->
+//                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
+//        }
 
         val inputType =
             if (info != null)
@@ -181,6 +180,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             InputType.TYPE_CLASS_NUMBER,
             InputType.TYPE_CLASS_DATETIME,
             InputType.TYPE_CLASS_PHONE -> enableInputMode(K9InputType.NUMBER)
+            0 -> return
             else -> enableInputMode(K9InputType.WORD)
         }
         updateStatusIcon(mode.status)
@@ -191,6 +191,8 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         hideStatusIcon()
         mode = null
         cursorPosition = 0
+        modeStatus = null
+        t9Trie.prune("a", depth = 3)
     }
 
     override suspend fun findCandidates(word: String): List<Word> {
@@ -251,16 +253,17 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
+    // TODO: Can this be merged with doPreloadTrie?
     private suspend fun initT9Trie() {
-        Log.d(LOG_TAG, "Initializing T9 trie")
+        //Log.d(LOG_TAG, "Initializing T9 trie")
         t9Trie.clear()
         for (char in "123456789") {
-            Log.d(LOG_TAG, "Finding candidates for '$char'")
+            //Log.d(LOG_TAG, "Finding candidates for '$char'")
             val words = wordDao.findCandidates(char.toString(), 50)
-            Log.d(LOG_TAG, "Found '${words.count()}'")
+            //Log.d(LOG_TAG, "Found '${words.count()}'")
             for (word in words) {
                 Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
-                t9Trie.add(word.code, word.word)
+                t9Trie.add(word.code, word.word, word.frequency)
             }
         }
     }
@@ -273,23 +276,34 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     private suspend fun doPreloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+        // Only preload if the key length meets the minimum threshold
         if (minKeyLength > 0 && key.length < minKeyLength) {
             return
         }
+        // If we've preloaded for this key recently, skip
+        if (lastNPreloads.contains(key)) {
+            return
+        }
+        else {
+            if (lastNPreloads.size == preloadsToCache) {
+                lastNPreloads.remove()
+            }
+            lastNPreloads.add(key)
+        }
         val words = wordDao.findCandidates(key, 200)
         for (word in words) {
-            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}")
-            t9Trie.add(word.code, word.word)
+            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
+            t9Trie.add(word.code, word.word, word.frequency)
         }
         if (retryCandidates) {
             resolveCodeWord(key, 1, true)
         }
-        t9Trie.prune(key, depth = 3)
+        //t9Trie.prune(key, depth = 3)
     }
 
     private fun initializeWordsFirstTime() {
         // TODO: Enumerate the settings keys
-        Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
+        //Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
         scope.launch {
             val setting = settingDao.getByKey("initialized")
             if (setting == null) {
@@ -305,9 +319,8 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
 
     private fun initializeWords() {
         val file_name = "t9_words.txt"
-        val batchSize = 500
+        val batchSize = 1000
         val wordBatch = ArrayList<Word>(batchSize)
-        var freq: Int
         application.assets.open(file_name).bufferedReader().useLines { lines ->
             for (chunk in lines.chunked(batchSize)) {
                 wordBatch.clear()
@@ -319,7 +332,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
                             arrayListIndex,
                             getWord(
                                 word = parts[0],
-                                frequency = if (parts.size > 1) parts[1].toInt() else 1
+                                frequency = if (parts.size > 1) parts[1].toInt() else 0
                             )
                         )
                         arrayListIndex++

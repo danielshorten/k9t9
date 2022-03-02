@@ -48,11 +48,13 @@ class WordInputModeTest {
     fun testDeleteLetter() {
         val mode = this.mode!!
         mode.getKeyPressResult(Key.N2)
-        mode.resolveCodeWord("2", listOf("a"))
+        mode.resolveCodeWord("2", listOf("a"), true)
 
         val result = mode.getKeyPressResult(Key.BACK)
 
-        assertEquals(true, result.consumed)
+        // Consumed is false because we're deleting the last character in the word we're composing,
+        // so we delegate to the input method to delete and reset things for us.
+        assertEquals(false, result.consumed)
         assertEquals(0, result.cursorPosition)
         assertEquals(null, result.codeWord)
     }
