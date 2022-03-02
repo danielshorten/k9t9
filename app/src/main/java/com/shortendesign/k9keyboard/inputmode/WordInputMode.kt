@@ -12,7 +12,6 @@ class WordInputMode(
     private val keypad: Keypad,
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
-    private var cursorPosition: Int = 0
     val codeWord = StringBuilder()
     private var candidateIdx: Int = 0
     private var cachedCandidates: List<Word>? = null
@@ -22,10 +21,6 @@ class WordInputMode(
     override val status: Status
         get() = this.currentStatus
 
-    fun setCursorPosition(position: Int) {
-        cursorPosition = position
-    }
-
     override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key)
@@ -34,19 +29,15 @@ class WordInputMode(
     fun getKeyPressResult(key: Key): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
-                //Log.d(LOG_TAG, "Space")
                 addSpace()
             }
             keypad.isLetter(key) -> {
-                //Log.d(LOG_TAG, "Letter")
                 addLetter(key)
             }
             keypad.isDelete(key) -> {
-                //Log.d(LOG_TAG, "Delete")
                 deleteLetter()
             }
             keypad.isNext(key) -> {
-                //Log.d(LOG_TAG, "Next")
                 nextCandidate()
             }
             else -> {
@@ -71,12 +62,7 @@ class WordInputMode(
     }
 
     private fun addSpace(): KeyPressResult {
-        cursorPosition++
-        // Get the final candidate word
-        var word = finishComposing()
-        // Add a space
-        word = if (word != null) "$word " else " "
-
+        finishComposing()
         return state(consumed = true, word = " ")
     }
 
@@ -97,7 +83,6 @@ class WordInputMode(
         }
         return KeyPressResult(
             consumed = consumed,
-            cursorPosition = cursorPosition,
             codeWord = finalCodeWord,
             word = word
         )
