@@ -4125,7 +4125,7 @@ arsines
 arsis
 arson
 arsonist
-art
+art 3
 arte
 artefact
 artefacts
@@ -6266,7 +6266,7 @@ bazaar's
 bazooka
 bazookas
 bdellium
-be
+be 3
 beach
 beachcomber
 beachcombers
@@ -14380,7 +14380,7 @@ comicality
 comically
 comics
 comic's
-coming
+coming 3
 comings
 comitia
 comity
@@ -24293,7 +24293,7 @@ easements
 easement's
 easer
 eases
-easier
+easier 3
 easiest
 easily
 easiness
@@ -35041,7 +35041,7 @@ happiest
 happily
 happiness
 happing
-happy
+happy 3
 harangue
 harangued
 haranguer
@@ -35253,7 +35253,7 @@ hastily
 hastiness
 hasting
 hasty
-hat
+hat 3
 hatband
 hatbox
 hatch
@@ -36220,7 +36220,7 @@ hires
 hiring
 hirsute
 hirsuteness
-his
+his 3
 hispid
 hiss
 hissed
@@ -49712,7 +49712,7 @@ never
 nevermore
 nevertheless
 nevus
-new
+new 3
 newborn
 newborns
 newcomer
@@ -51458,7 +51458,7 @@ oust
 ousted
 ouster
 ousting
-out
+out 3
 outage
 outages
 outage's
@@ -62556,7 +62556,7 @@ rumpling
 rumps
 rumpus
 rumrunner
-run
+run 3
 runabout
 runabouts
 runaway
@@ -77952,7 +77952,7 @@ waxwings
 waxwork
 waxworks
 waxy
-way
+way 3
 way's
 waybill
 wayfarer
