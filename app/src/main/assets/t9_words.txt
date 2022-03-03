@@ -7,6 +7,7 @@
 @ 4
 $ 3
 's
+a
 aardvark
 aardvarks
 aardvark's
@@ -3905,7 +3906,7 @@ ardour's
 arduous
 arduously
 arduousness
-are
+are 3
 area
 areas
 area's
@@ -15273,7 +15274,7 @@ conferrers
 conferrer's
 conferring
 confers
-confess
+confess 3
 confessable
 confessant
 confessed
@@ -32382,7 +32383,7 @@ gauzily
 gauziness
 gauzing
 gauzy
-gave
+gave 2
 gavel
 gavelled
 gavelling
@@ -35317,7 +35318,7 @@ hausfrau
 hautboy
 haute
 hauteur
-have
+have 3
 haven
 havens
 haven's
@@ -35390,7 +35391,7 @@ hazily
 haziness
 hazing
 hazy
-he
+he 3
 head
 headache
 headaches
@@ -36161,7 +36162,7 @@ hilly
 hilt
 hilts
 hilt's
-him
+him 3
 himself
 hind
 hindbrain
@@ -37800,7 +37801,7 @@ idyllic
 idyllically
 idyllist
 ie
-if
+if 2
 iffy
 igloo
 igloos
