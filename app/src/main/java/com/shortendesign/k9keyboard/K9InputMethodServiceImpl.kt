@@ -155,11 +155,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onCreateCandidatesView(): View {
-        val candidatesView =
-            CandidateView(applicationContext)
-        candidatesView.setSuggestions(listOf("Ball", "Call", "Mall", "Tall", "Fall", "Pall", "Gall"))
-        setCandidatesViewShown(true)
-        return candidatesView
+        return CandidateView(applicationContext)
     }
 
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
