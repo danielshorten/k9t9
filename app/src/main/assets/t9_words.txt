@@ -6,8 +6,8 @@
 - 5
 @ 4
 $ 3
-:)
-:(
+:) 10
+:( 9
 :D
 :O
 's
@@ -5607,7 +5607,7 @@ balkiness
 balking
 balks
 balky
-ball
+ball 2
 ballad
 ballade
 balladeer
@@ -9185,7 +9185,7 @@ brimstone
 brindle
 brindled
 brine
-bring
+bring 3
 bringer
 bringers
 bringing
@@ -10316,7 +10316,7 @@ caliphate
 caliphs
 calisaya
 calk
-call
+call 3
 calla
 callable
 callboy
@@ -21595,7 +21595,7 @@ dining
 dinitrobenzene
 dink
 dinky
-dinner
+dinner 3
 dinnerless
 dinners
 dinner's
@@ -35769,7 +35769,7 @@ helmsman
 helmsmen
 helot
 helotism
-help
+help 3
 helped
 helper
 helpers
@@ -36039,7 +36039,7 @@ hexangular
 hexapod
 hexapody
 hexastich
-hey
+hey 3
 heyday
 hi
 hiatus
@@ -41947,7 +41947,7 @@ jogs
 john
 johns
 john's
-join
+join 3
 joinable
 joined
 joiner
@@ -43253,7 +43253,7 @@ lassoed
 lassoer
 lassoes
 lass's
-last
+last 3
 lasted
 lasting
 lastingly
@@ -44149,7 +44149,7 @@ lignite
 lignum
 ligroin
 likable
-like
+like 3
 likeable
 liked
 likelier
@@ -44500,7 +44500,7 @@ littermate
 littermates
 littermate's
 litters
-little
+little 3
 littleneck
 littleness
 littler
@@ -50887,6 +50887,7 @@ oilstone
 oily
 ointment
 ointments
+OK 3
 okapi
 okay
 okays
@@ -53155,7 +53156,7 @@ pawnshop
 pawnshops
 pawnshop's
 paws
-pay
+pay 4
 payable
 payday
 payee
@@ -58953,7 +58954,7 @@ ravishes
 ravishing
 ravishingly
 ravishment
-raw
+raw 2
 rawer
 rawest
 rawhide
@@ -63193,7 +63194,7 @@ savoury
 savoury's
 savvied
 savvy
-saw
+saw 3
 sawbones
 sawboneses
 sawbuck
@@ -63216,7 +63217,7 @@ saxophone
 saxophone's
 saxophones
 saxophonist
-say
+say 5
 saying
 sayings
 says
@@ -66287,7 +66288,7 @@ smallish
 smallness
 smallpox
 smarmy
-smart
+smart 3
 smarted
 smarten
 smartened
@@ -69645,7 +69646,7 @@ succumb
 succumbed
 succumbing
 succumbs
-such
+such 3
 suchlike
 suck
 sucked
@@ -71827,6 +71828,7 @@ texture
 textured
 textures
 texturing
+th 2
 thalamic
 thalamus
 thalassic
@@ -72815,7 +72817,7 @@ tonsured
 tonsuring
 tontine
 tonus
-too
+too 3
 took
 tool
 toolbox
@@ -74491,6 +74493,7 @@ uglier
 ugliest
 ugliness
 ugly
+uh 3
 ukulele
 ulcer
 ulcer's
@@ -79010,7 +79013,7 @@ wontedness
 wonting
 wonton
 woo
-wood
+wood 3
 wood's
 woodborer
 woodcarver
@@ -79561,8 +79564,8 @@ yeoman
 yeomanly
 yeomanry
 yeomen
-yep
-yes
+yep 2
+yes 3
 yeses
 yeshiva
 yester
@@ -79743,7 +79746,7 @@ zodiacs
 zombie
 zombies
 zonal
-zone
+zone 2
 zoned
 zones
 zoning
