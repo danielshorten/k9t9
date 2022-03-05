@@ -172,7 +172,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 info.inputType and InputType.TYPE_MASK_CLASS
             else InputType.TYPE_CLASS_TEXT
 
-        if (this.t9Trie.root == null) {
+        if (this.t9Trie.root == null && areWordsInitialized) {
             scope.launch {
                 initT9Trie()
             }
