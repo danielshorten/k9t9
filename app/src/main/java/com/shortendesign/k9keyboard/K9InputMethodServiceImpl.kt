@@ -26,24 +26,39 @@ import kotlinx.coroutines.*
 import java.util.concurrent.ArrayBlockingQueue
 
 
-class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
+class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private val LOG_TAG: String = "K9Input"
+
+    // Current input mode (e.g. Word, letter, number)
     private var mode: InputMode? = null
+    // Mode enum value for cycling through modes
+    private var currentMode = K9InputType.WORD.idx
+    // Current status for the input mode (e.g. capitalized word, all-caps letters)
+    private var modeStatus: Status? = null
+    // Keypad class to handle key/character mapping
+    private val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+
     private lateinit var db: AppDatabase
     private lateinit var wordDao: WordDao
     private lateinit var settingDao: SettingDao
-    private val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+
+    // Job/scope for coroutines
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
+    // current trie preloading job
     private var preloadJob: Job? = null
+    // Keep track of recently preloaded keys to reduce unnecessary loading
     private val preloadsToCache = 3
     private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
+
+    // Keep track of if we're composing to help committing the finished word
     private var isComposing = false
+
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
-    private var modeStatus: Status? = null
+
+    // Trie for loading and searching for words by key
     private val t9Trie = T9Trie()
-    private var currentMode = K9InputType.WORD.idx
 
     override fun onCreate() {
         super.onCreate()
@@ -140,29 +155,12 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
     }
 
     override fun onCreateCandidatesView(): View {
-        val candidatesView =
-            CandidateView(applicationContext)
-        candidatesView.setSuggestions(listOf("Ball", "Call", "Mall", "Tall", "Fall", "Pall", "Gall"))
-        setCandidatesViewShown(true)
-        return candidatesView
+        return CandidateView(applicationContext)
     }
 
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
         inputConnection = currentInputConnection
         cursorPosition = info?.initialSelEnd ?: 0
-
-//        when (info!!.inputType and InputType.TYPE_MASK_CLASS) {
-//            InputType.TYPE_CLASS_NUMBER ->
-//                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
-//            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
-//                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
-//            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
-//                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
-//            InputType.TYPE_CLASS_TEXT ->
-//                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
-//            else ->
-//                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
-//        }
 
         val inputType =
             if (info != null)
@@ -170,7 +168,6 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             else InputType.TYPE_CLASS_TEXT
 
         if (this.t9Trie.root == null) {
-            Node.setSupportedChars("123456789")
             scope.launch {
                 initT9Trie()
             }
@@ -253,29 +250,27 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         }
     }
 
-    // TODO: Can this be merged with doPreloadTrie?
     private suspend fun initT9Trie() {
-        //Log.d(LOG_TAG, "Initializing T9 trie")
+        Node.setSupportedChars("123456789")
         t9Trie.clear()
         for (char in "123456789") {
-            //Log.d(LOG_TAG, "Finding candidates for '$char'")
-            val words = wordDao.findCandidates(char.toString(), 50)
-            //Log.d(LOG_TAG, "Found '${words.count()}'")
-            for (word in words) {
-                Log.d(LOG_TAG, "Trie ${word.code} => ${word.word}")
-                t9Trie.add(word.code, word.word, word.frequency)
-            }
+            doPreloadTrie(char.toString(), numCandidates = 50)
         }
     }
 
     private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
         preloadJob?.cancel()
         preloadJob = scope.launch {
-            doPreloadTrie(key, minKeyLength, retryCandidates)
+            doPreloadTrie(key, minKeyLength, retryCandidates = retryCandidates)
         }
     }
 
-    private suspend fun doPreloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+    private suspend fun doPreloadTrie(
+        key: String,
+        minKeyLength: Int = 0,
+        numCandidates: Int = 200,
+        retryCandidates: Boolean = false
+    ) {
         // Only preload if the key length meets the minimum threshold
         if (minKeyLength > 0 && key.length < minKeyLength) {
             return
@@ -290,7 +285,7 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
             }
             lastNPreloads.add(key)
         }
-        val words = wordDao.findCandidates(key, 200)
+        val words = wordDao.findCandidates(key, numCandidates)
         for (word in words) {
             Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
             t9Trie.add(word.code, word.word, word.frequency)
@@ -301,9 +296,12 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
         //t9Trie.prune(key, depth = 3)
     }
 
+    /**
+     * On the first time loading the service, we want to initialize the SQLite database with words
+     * from our word list
+     */
     private fun initializeWordsFirstTime() {
         // TODO: Enumerate the settings keys
-        //Log.d(LOG_TAG,"Checking for initialized DB asynchronously...")
         scope.launch {
             val setting = settingDao.getByKey("initialized")
             if (setting == null) {
@@ -345,6 +343,23 @@ class K9InputMethodServiceImpl() : InputMethodService(), K9InputMethodService {
                     wordDao.insert(*wordBatch.toTypedArray())
                 }
             }
+        }
+    }
+
+    /***************************** HELPERS ****************************************/
+
+    private fun logInputType(info: EditorInfo) {
+        when (info.inputType and InputType.TYPE_MASK_CLASS) {
+            InputType.TYPE_CLASS_NUMBER ->
+                Log.d(LOG_TAG, "TYPE_CLASS_NUMBER")
+            InputType.TYPE_CLASS_DATETIME ->                // Numbers and dates default to the symbols keyboard, with
+                Log.d(LOG_TAG, "TYPE_CLASS_DATETIME")
+            InputType.TYPE_CLASS_PHONE ->                // Phones will also default to the symbols keyboard, though
+                Log.d(LOG_TAG, "TYPE_CLASS_PHONE")
+            InputType.TYPE_CLASS_TEXT ->
+                Log.d(LOG_TAG, "TYPE_CLASS_TEXT")
+            else ->
+                Log.d(LOG_TAG, "TYPE_OTHER" + (info.inputType and InputType.TYPE_MASK_CLASS))
         }
     }
 }

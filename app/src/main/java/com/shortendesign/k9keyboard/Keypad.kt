@@ -5,23 +5,34 @@ import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import java.lang.StringBuilder
 
+/**
+ * Class to represent the physical key layout and the mapping from keys to letters
+ */
 class Keypad(
     // Map from Android keyCode to the Key that should be activated
     private val keyCodeMapping: Map<Int, Key>,
+    // Map from keyboard Key to the letters/symbols associated with that key
     private val letterLayout: Map<Key, List<Char>>
 ) {
     // Map from letters to the Key pressed to access them
     private lateinit var letterKeyMap: Map<Char, Key>
+    // Map to cache which keys are used to type alpha-numeric characters
     private lateinit var keyIsLetterMap: Map<Key, Boolean>
 
     init {
         initKeyMaps(letterLayout)
     }
 
+    /**
+     * Resolve Android keycode to our internal Key enum value
+     */
     fun getKey(keyCode: Int): Key? {
         return keyCodeMapping[keyCode]
     }
 
+    /**
+     * Tell whether a key is mapped to alpha-numeric characters
+     */
     fun isLetter(key: Key): Boolean {
         if (keyIsLetterMap[key] == true)
             return true
@@ -29,23 +40,33 @@ class Keypad(
         return false
     }
 
+    /**
+     * Get the numeric value associated with a key.
+     * Currently the convention is to store the numeric value first in the list of characters for
+     * the key.
+     */
     fun getDigit(key: Key): Char? {
         val letters = letterLayout[key] ?: return null
         return if (letters.isNotEmpty() && letters[0].isDigit()) letters[0] else null
     }
 
+    // Is this the delete key?
     fun isDelete(key: Key): Boolean {
+        // hard coded for now
         return key == Key.BACK
     }
 
+    // Is this the next-candidate key?
     fun isNext(key: Key): Boolean {
+        // hard coded for now
         return key == Key.STAR
     }
 
+    // Is this the space key?
     fun isSpace(key: Key): Boolean {
+        // hard coded for now
         return key == Key.N0
     }
-
 
     /**
      * Get the series of key character values required to represent a word
@@ -58,13 +79,6 @@ class Keypad(
             builder.append(code)
         }
         return builder.toString()
-    }
-
-    /**
-     * Get the Key that is activated by a keyCode
-     */
-    fun keyForKeyCode(keyCode: Int): Key? {
-        return keyCodeMapping[keyCode]
     }
 
     /**
@@ -98,5 +112,4 @@ class Keypad(
         }
         return letterKeyMap
     }
-
 }

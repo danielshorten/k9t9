@@ -30,7 +30,6 @@ class NumberInputMode (
         }
         return KeyPressResult(
             consumed,
-            1,
             null,
             word = word
         )
