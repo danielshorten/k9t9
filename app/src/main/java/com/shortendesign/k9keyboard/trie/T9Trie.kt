@@ -18,7 +18,9 @@ class T9Trie {
     }
 
     fun prune(key: String, depth: Int = 1) {
-        Node.prune(key, depth, LinkedBlockingQueue<Node>(listOf(root)))
+        if (root != null) {
+            Node.prune(key, depth, LinkedBlockingQueue<Node>(listOf(root)))
+        }
     }
 
     fun getCandidates(key: String, count: Int = 1, maxLength: Int = 0): List<String> {

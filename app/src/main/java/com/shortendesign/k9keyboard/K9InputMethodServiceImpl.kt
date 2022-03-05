@@ -41,6 +41,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private lateinit var db: AppDatabase
     private lateinit var wordDao: WordDao
     private lateinit var settingDao: SettingDao
+    private var areWordsInitialized = false
 
     // Job/scope for coroutines
     private val job = SupervisorJob()
@@ -109,6 +110,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private fun handleInputModeResult(result: KeyPressResult) {
         // If we get back a code word, we'll need to resolve it
         when {
+            // Don't handle any key presses for WORD input type if words aren't yet initialized
+            currentMode == K9InputType.WORD.idx && !areWordsInitialized -> {
+                return
+            }
             result.codeWord != null -> {
                 isComposing = true
                 val candidate = resolveCodeWord(result.codeWord, 1)
@@ -120,7 +125,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             result.word != null -> {
                 // TODO: Support a delay for committing the word
                 finishComposing()
-                inputConnection?.commitText(result.word, 2)
+                inputConnection?.commitText(result.word, 1)
             }
             else -> {
                 finishComposing()
@@ -167,7 +172,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 info.inputType and InputType.TYPE_MASK_CLASS
             else InputType.TYPE_CLASS_TEXT
 
-        if (this.t9Trie.root == null) {
+        if (this.t9Trie.root == null && areWordsInitialized) {
             scope.launch {
                 initT9Trie()
             }
@@ -308,9 +313,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 Log.d(LOG_TAG,"Initializing word database...")
                 initializeWords()
                 Setting.set("initialized", "t", settingDao)
+                areWordsInitialized = true
             }
             else {
                 Log.d(LOG_TAG, "Word database already initialized")
+                areWordsInitialized = true
             }
         }
     }

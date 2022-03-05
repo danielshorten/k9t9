@@ -57,6 +57,10 @@ class WordInputMode(
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
             consumed = codeWord.isNotEmpty()
+            // If we've deleted the whole word we were composing, reset the candidate index
+            if (!consumed) {
+                candidateIdx = 0
+            }
         }
         return state(consumed, codeWord.toString())
     }
