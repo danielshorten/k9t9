@@ -6027,7 +6027,7 @@ basally
 basalt
 basaltic
 bascule
-base
+base 3
 baseball
 baseballs
 baseball's
@@ -10877,7 +10877,7 @@ carcinogenic
 carcinogenicity
 carcinogens
 carcinoma
-card
+card 5
 cardamom
 cardboard
 cardboards
@@ -10912,7 +10912,7 @@ cards
 card's
 cardsharp
 cardsharper
-care
+care 4
 cared
 careen
 careened
@@ -17205,6 +17205,7 @@ covetousness
 covets
 covey
 coveys
+covid
 coving
 cow
 cowage
@@ -28157,7 +28158,7 @@ fabulously
 fabulousness
 facade
 facades
-face
+face 3
 faced
 facedown
 faceless
@@ -33498,7 +33499,7 @@ gossipmongers
 gossips
 gossipy
 gossoon
-got
+got 3
 gotcha
 gotten
 gouache
@@ -34664,7 +34665,7 @@ hacks
 hacksaw
 hacksaws
 hackwork
-had
+had 3
 haddock
 haddocks
 hade
@@ -34733,6 +34734,7 @@ hagiolatry
 hagiology
 hagioscope
 hah
+haha
 haiku
 hail
 hailed
@@ -35288,7 +35290,7 @@ hatefulness
 hater
 hates
 hath
-hating
+hating 2
 hatless
 hatpin
 hatred
@@ -35331,7 +35333,7 @@ haversack
 haversacks
 haversack's
 haves
-having
+having 3
 havoc
 havocked
 havocking
@@ -44839,13 +44841,13 @@ longspur
 longstanding
 longwinded
 loo
-look
+look 3
 looked
 lookers
 looking
 lookout
 lookouts
-looks
+looks 3
 lookup
 lookups
 lookup's
@@ -48198,6 +48200,7 @@ monatomic
 monaural
 monaurally
 monazite
+Monday
 monetarily
 monetarism
 monetarist
@@ -50128,7 +50131,7 @@ nostrils
 nostril's
 nostrum
 nosy
-not
+not 3
 notability
 notable
 notables
@@ -53178,7 +53181,7 @@ payoff's
 payola
 payroll
 payrolls
-pays
+pays 4
 pea
 peace
 peaceable
@@ -63220,7 +63223,7 @@ saxophonist
 say 5
 saying
 sayings
-says
+says 5
 scab
 scabbard
 scabbard's
@@ -69861,6 +69864,7 @@ sunburst
 sunbursts
 sundae
 sundaes
+sunday
 sunder
 sundered
 sundering
@@ -70136,7 +70140,7 @@ surcharged
 surcharges
 surcharging
 surd
-sure
+sure 3
 sure-fire
 surefooted
 surefootedness
@@ -74120,6 +74124,7 @@ tuckered
 tuckering
 tucking
 tucks
+Tuesday
 tuff
 tuffet
 tuft
@@ -78065,6 +78070,7 @@ wedged
 wedges
 wedging
 wedlock
+Wednesday
 weds
 wee
 weed
