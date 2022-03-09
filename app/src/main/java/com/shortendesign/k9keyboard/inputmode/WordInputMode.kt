@@ -17,6 +17,7 @@ class WordInputMode(
     private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
+    private var typingSinceUpperMode = false
 
     override val status: Status
         get() = this.currentStatus
@@ -40,6 +41,9 @@ class WordInputMode(
             keypad.isNext(key) -> {
                 nextCandidate()
             }
+            keypad.isShift(key) -> {
+                shiftMode()
+            }
             else -> {
                 finishComposing()
                 state(consumed = false)
@@ -49,6 +53,9 @@ class WordInputMode(
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
+        if (currentStatus == Status.WORD_UPPER) {
+            typingSinceUpperMode = true
+        }
         return state(true, codeWord = codeWord.toString())
     }
 
@@ -75,6 +82,32 @@ class WordInputMode(
             candidateIdx++
         }
         return state(true)
+    }
+
+    private fun shiftMode(): KeyPressResult {
+        var consumed = true
+
+        currentStatus = when (currentStatus) {
+            Status.WORD -> Status.WORD_CAP
+            Status.WORD_CAP -> {
+                typingSinceUpperMode = false
+                Status.WORD_UPPER
+            }
+            Status.WORD_UPPER -> {
+                if (typingSinceUpperMode) {
+                    Status.WORD
+                } else {
+                    consumed = false
+                    Status.WORD_UPPER
+                }
+            }
+            else -> {
+                consumed = false
+                currentStatus
+            }
+        }
+
+        return state(consumed)
     }
 
     private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null): KeyPressResult {
@@ -126,6 +159,16 @@ class WordInputMode(
             if (candidateWord.length > codeWord.length) {
                 candidateWord = candidateWord.substring(0, codeWord.length)
             }
+
+            candidateWord = when (currentStatus) {
+                Status.WORD_CAP -> {
+                    currentStatus = Status.WORD
+                    candidateWord.replaceFirstChar { it.uppercase() }
+                }
+                Status.WORD_UPPER -> candidateWord.uppercase()
+                else -> candidateWord
+            }
+
             lastResolvedCodeWord = codeWord
             return candidateWord
         }

@@ -62,6 +62,12 @@ class Keypad(
         return key == Key.STAR
     }
 
+    // Is this the next-candidate key?
+    fun isShift(key: Key): Boolean {
+        // hard coded for now
+        return key == Key.POUND
+    }
+
     // Is this the space key?
     fun isSpace(key: Key): Boolean {
         // hard coded for now
