@@ -30,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "k9keyboard_database"
                     )
                         .fallbackToDestructiveMigration()
+                        .allowMainThreadQueries()
                         .build()
                     INSTANCE = instance
                 }

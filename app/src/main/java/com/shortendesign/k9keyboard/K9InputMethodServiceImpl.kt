@@ -116,11 +116,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             }
             result.codeWord != null -> {
                 isComposing = true
-                val candidate = resolveCodeWord(result.codeWord, 1)
+                val candidate = resolveCodeWord(result.codeWord, 1, true)
 
-                scope.launch {
-                    preloadTrie(result.codeWord, 2, candidate == null)
-                }
+//                scope.launch {
+//                    preloadTrie(result.codeWord, 2, candidate == null)
+//                }
             }
             result.word != null -> {
                 // TODO: Support a delay for committing the word
@@ -141,9 +141,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
-        val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
+        val candidates = wordDao.findCandidates(codeWord)
         Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
-        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
+        val candidate = mode!!.resolveCodeWord(codeWord, candidates.map{ it.word }, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate
     }
@@ -172,11 +172,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 info.inputType and InputType.TYPE_MASK_CLASS
             else InputType.TYPE_CLASS_TEXT
 
-        if (this.t9Trie.root == null && areWordsInitialized) {
-            scope.launch {
-                initT9Trie()
-            }
-        }
+//        if (this.t9Trie.root == null && areWordsInitialized) {
+//            scope.launch {
+//                initT9Trie()
+//            }
+//        }
 
         val mode = when (inputType) {
             InputType.TYPE_CLASS_NUMBER,
