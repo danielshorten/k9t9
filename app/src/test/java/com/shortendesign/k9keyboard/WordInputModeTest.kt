@@ -193,4 +193,21 @@ class WordInputModeTest {
         assertEquals("The candidate should be I'm",
             "I'm", candidate)
     }
+
+    @Test
+    fun testRegisterMaskDigit() {
+        val startingMask = 0
+
+        // Switch on index 0
+        val mask1 = WordInputMode.registerMaskDigit(startingMask, 0)
+        assertEquals("1", Integer.toBinaryString(mask1))
+
+        // Switch on index 2 from previous mask
+        val mask2 = WordInputMode.registerMaskDigit(mask1, 2)
+        assertEquals("101", Integer.toBinaryString(mask2))
+
+        // Switch off index 0 from previous mask
+        val mask3 = WordInputMode.registerMaskDigit(mask2, 0, false)
+        assertEquals("100", Integer.toBinaryString(mask3))
+    }
 }
