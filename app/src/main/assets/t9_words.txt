@@ -148,7 +148,7 @@ ablative
 ablator
 ablaut
 ablaze
-able
+able 4
 abler
 ablest
 abloom
@@ -5545,7 +5545,7 @@ baiter
 baiting
 baits
 baize
-bake
+bake 2
 baked
 baker
 bakeries
@@ -6027,7 +6027,7 @@ basally
 basalt
 basaltic
 bascule
-base
+base 3
 baseball
 baseballs
 baseball's
@@ -10233,7 +10233,7 @@ cajolery
 cajoles
 cajoling
 cajuput
-cake
+cake 3
 caked
 cakes
 cakewalk
@@ -10877,7 +10877,7 @@ carcinogenic
 carcinogenicity
 carcinogens
 carcinoma
-card
+card 5
 cardamom
 cardboard
 cardboards
@@ -10912,7 +10912,7 @@ cards
 card's
 cardsharp
 cardsharper
-care
+care 4
 cared
 careen
 careened
@@ -17205,6 +17205,7 @@ covetousness
 covets
 covey
 coveys
+covid 2
 coving
 cow
 cowage
@@ -28157,7 +28158,7 @@ fabulously
 fabulousness
 facade
 facades
-face
+face 3
 faced
 facedown
 faceless
@@ -29383,14 +29384,14 @@ financier's
 financing
 finback
 finch
-find
+find 3
 findable
 finder
 finders
 finding
 findings
 finds
-fine
+fine 2
 fineable
 fined
 finely
@@ -31700,7 +31701,7 @@ fulguration
 fulgurations
 fulgurous
 fuliginous
-full
+full 3
 fullback
 fuller
 fullest
@@ -33400,7 +33401,7 @@ gondola
 gondolas
 gondolier
 gondoliers
-gone 4
+gone 3
 goner
 gonfalon
 gong
@@ -33410,7 +33411,7 @@ gonococcus
 gonorrhoea
 gonorrhoeal
 goober
-good 3
+good 4
 goodbye
 goodbyes
 goodbye's
@@ -33498,7 +33499,7 @@ gossipmongers
 gossips
 gossipy
 gossoon
-got
+got 3
 gotcha
 gotten
 gouache
@@ -34664,7 +34665,7 @@ hacks
 hacksaw
 hacksaws
 hackwork
-had
+had 3
 haddock
 haddocks
 hade
@@ -34733,6 +34734,7 @@ hagiolatry
 hagiology
 hagioscope
 hah
+haha 2
 haiku
 hail
 hailed
@@ -35072,7 +35074,7 @@ harbouring
 harbourless
 harbours
 harbour's
-hard
+hard 3
 hardback
 hardball
 hardboard
@@ -35288,7 +35290,7 @@ hatefulness
 hater
 hates
 hath
-hating
+hating 2
 hatless
 hatpin
 hatred
@@ -35331,7 +35333,7 @@ haversack
 haversacks
 haversack's
 haves
-having
+having 3
 havoc
 havocked
 havocking
@@ -36892,7 +36894,7 @@ hourglass
 hourly
 hours
 hour's
-house
+house 3
 houseboat
 houseboats
 housebound
@@ -44839,13 +44841,13 @@ longspur
 longstanding
 longwinded
 loo
-look
+look 3
 looked
 lookers
 looking
 lookout
 lookouts
-looks
+looks 3
 lookup
 lookups
 lookup's
@@ -46324,7 +46326,7 @@ maze
 mazes
 maze's
 mazy
-me
+me 2
 mead
 meadow
 meadowland
@@ -46411,7 +46413,7 @@ mechanistic
 mechanistically
 mechanoreceptor
 mecum
-med
+med 3
 medal
 medalled
 medalling
@@ -48198,6 +48200,7 @@ monatomic
 monaural
 monaurally
 monazite
+Monday
 monetarily
 monetarism
 monetarist
@@ -49509,7 +49512,7 @@ needlewomen
 needlework
 needling
 needn't
-needs
+needs 3
 needy
 nefarious
 nefariously
@@ -50128,7 +50131,7 @@ nostrils
 nostril's
 nostrum
 nosy
-not
+not 3
 notability
 notable
 notables
@@ -50732,7 +50735,7 @@ octoroon
 ocular
 oculist
 odalisque
-odd
+odd 4
 oddball
 oddballs
 oddball's
@@ -50779,8 +50782,8 @@ oestrous
 oestrus
 oeuvre
 oeuvres
-of
-off
+of 3
+off 5
 offal
 offbeat
 offence
@@ -50796,7 +50799,7 @@ offensive
 offensively
 offensiveness
 offensives
-offer
+offer 2
 offered
 offering
 offerings
@@ -53178,7 +53181,7 @@ payoff's
 payola
 payroll
 payrolls
-pays
+pays 4
 pea
 peace
 peaceable
@@ -54422,7 +54425,7 @@ picturesquely
 picturing
 piddle
 piddling
-pie
+pie 2
 piebald
 piece
 pieced
@@ -61822,7 +61825,7 @@ ricocheting
 ricochets
 ricotta
 rictus
-rid
+rid 3
 riddance
 ridded
 ridden
@@ -62586,7 +62589,7 @@ running
 runny
 runoff
 runoffs
-runs
+runs 3
 runt
 runtime
 runts
@@ -63220,7 +63223,7 @@ saxophonist
 say 5
 saying
 sayings
-says
+says 5
 scab
 scabbard
 scabbard's
@@ -64820,7 +64823,7 @@ shawls
 shawm
 shay
 shays
-she
+she 4
 she'd
 she'll
 she's
@@ -65166,7 +65169,7 @@ shovelnose
 shovels
 shoves
 shoving
-show
+show 3
 showboat
 showbread
 showcase
@@ -66413,8 +66416,8 @@ smuttier
 smuttiness
 smutting
 smutty
-snack
-snacks
+snack 3
+snacks 3
 snaffle
 snaffled
 snaffling
@@ -67051,7 +67054,7 @@ soundproof
 soundproofed
 soundproofing
 soundproofs
-sounds
+sounds 3
 soup
 soup's
 soupier
@@ -68194,7 +68197,7 @@ startled
 startles
 startling
 startlingly
-starts
+starts 3
 starvation
 starve
 starved
@@ -68739,7 +68742,7 @@ stoopball
 stooped
 stooping
 stoops
-stop
+stop 4
 stop's
 stopcock
 stopcocks
@@ -69842,7 +69845,7 @@ sumptuary
 sumptuous
 sumptuously
 sumptuousness
-sums
+sums 2
 sun
 sun's
 sunbaked
@@ -69861,6 +69864,7 @@ sunburst
 sunbursts
 sundae
 sundaes
+sunday
 sunder
 sundered
 sundering
@@ -70136,7 +70140,7 @@ surcharged
 surcharges
 surcharging
 surd
-sure
+sure 3
 sure-fire
 surefooted
 surefootedness
@@ -74120,6 +74124,7 @@ tuckered
 tuckering
 tucking
 tucks
+Tuesday
 tuff
 tuffet
 tuft
@@ -78065,6 +78070,7 @@ wedged
 wedges
 wedging
 wedlock
+Wednesday
 weds
 wee
 weed
