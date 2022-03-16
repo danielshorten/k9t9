@@ -3719,6 +3719,7 @@ appurtenant
 apricot
 apricots
 apricot's
+April
 apriority
 apron
 aprons
@@ -10294,6 +10295,7 @@ calendula
 calenture
 calf
 calfskin
+Calgary
 calibrate
 calibrated
 calibrates
@@ -19067,6 +19069,7 @@ decelerating
 deceleration
 decelerations
 decelerator
+December
 decemvirate
 decencies
 decency
@@ -24010,7 +24013,7 @@ dungy
 dunk
 dunker
 dunlin
-duo
+duo 2
 duodecimal
 duodecimo
 duodenal
@@ -24306,6 +24309,7 @@ easiness
 easing
 east
 eastbound
+Easter
 easterly
 eastern
 easterner
@@ -24516,6 +24520,7 @@ editors
 editor's
 editorship
 edits
+Edmonton
 educability
 educable
 educate
@@ -28593,7 +28598,7 @@ fasteners
 fastening
 fastenings
 fastens
-faster
+faster 4
 fastest
 fastidious
 fastidiously
@@ -28778,6 +28783,7 @@ featuring
 febricity
 febrifuge
 febrile
+February
 feckless
 fecklessly
 fecklessness
@@ -31428,6 +31434,7 @@ frictionally
 frictionless
 frictions
 friction's
+Friday
 fridge
 fridges
 fridge's
@@ -31741,7 +31748,7 @@ fumigators
 fuming
 fumitory
 fumy
-fun
+fun 3
 funambulist
 function
 functional
@@ -41695,6 +41702,7 @@ janitorial
 janitors
 janitor's
 janitress
+January
 japanned
 japanning
 jape
@@ -42140,6 +42148,7 @@ jukes
 julep
 juleps
 julienne
+July
 jumble
 jumbled
 jumbles
@@ -42164,6 +42173,7 @@ junction's
 juncture
 junctures
 juncture's
+June
 jungle
 jungles
 jungle's
@@ -42765,6 +42775,7 @@ kobold
 kohlrabi
 kola
 kolkhoz
+Komal
 kook
 kookaburra
 kookier
@@ -44057,7 +44068,7 @@ lidos
 lids
 lid's
 lie
-lied
+lied 3
 lieder
 liege
 liegeman
@@ -44071,7 +44082,7 @@ lieutenancy
 lieutenant
 lieutenants
 lieutenant's
-life
+life 4
 lifeblood
 lifeboat
 lifeboats
@@ -50226,6 +50237,7 @@ novel's
 novelties
 novelty
 novelty's
+November
 novena
 novice
 novices
@@ -50729,6 +50741,7 @@ octaves
 octavo
 octet
 octillion
+October
 octogenarian
 octopus
 octoroon
@@ -59743,7 +59756,7 @@ redistricting
 redneck
 rednecks
 redness
-redo
+redo 3
 redoing
 redolence
 redolent
@@ -63134,6 +63147,7 @@ saturating
 saturation
 saturations
 saturator
+Saturday
 saturnalia
 saturnine
 satyr
@@ -64096,14 +64110,14 @@ seeker
 seekers
 seeking
 seeks
-seem
+seem 4
 seemed
 seeming
 seemingly
 seemlier
 seemliness
 seemly
-seems
+seems 4
 seen
 seep
 seepage
@@ -64394,6 +64408,7 @@ sepsis
 septa
 septennial
 septet
+September
 septic
 septicaemia
 septillion
@@ -69864,7 +69879,7 @@ sunburst
 sunbursts
 sundae
 sundaes
-sunday
+Sunday
 sunder
 sundered
 sundering
@@ -72317,6 +72332,7 @@ thunderstorm
 thunderstorm's
 thunderstorms
 thunderstruck
+Thursday
 thus
 thusly
 thwack
