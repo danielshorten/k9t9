@@ -118,9 +118,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 isComposing = true
                 val candidate = resolveCodeWord(result.codeWord, 1)
 
-                scope.launch {
-                    preloadTrie(result.codeWord, 2, candidate == null)
-                }
+                preloadTrie(result.codeWord, 2, retryCandidates = candidate == null)
             }
             result.word != null -> {
                 // TODO: Support a delay for committing the word
@@ -173,7 +171,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             else InputType.TYPE_CLASS_TEXT
 
         if (this.t9Trie.root == null && areWordsInitialized) {
-            scope.launch {
+            preloadJob?.cancel()
+            preloadJob = scope.launch {
                 initT9Trie()
             }
         }
@@ -259,14 +258,17 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         Node.setSupportedChars("123456789")
         t9Trie.clear()
         for (char in "123456789") {
-            doPreloadTrie(char.toString(), numCandidates = 50)
+            doPreloadTrie(char.toString())
         }
     }
 
     private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
-        preloadJob?.cancel()
-        preloadJob = scope.launch {
-            doPreloadTrie(key, minKeyLength, retryCandidates = retryCandidates)
+        if (preloadJob == null || !preloadJob!!.isActive) {
+            preloadJob = scope.launch {
+                Log.d(LOG_TAG, "Starting trie preload...")
+                doPreloadTrie(key, minKeyLength, 200, retryCandidates = retryCandidates)
+                Log.d(LOG_TAG, "Preload finished.")
+            }
         }
     }
 
@@ -292,7 +294,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
         val words = wordDao.findCandidates(key, numCandidates)
         for (word in words) {
-            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
+//            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
             t9Trie.add(word.code, word.word, word.frequency)
         }
         if (retryCandidates) {
