@@ -247,6 +247,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             showStatusIcon(
                 when (status) {
                     Status.WORD_CAP -> R.drawable.ime_en_lang_single
+                    Status.WORD_UPPER -> R.drawable.ime_en_lang_upper
                     Status.NUM -> R.drawable.ime_number
                     else -> 0
                 }
