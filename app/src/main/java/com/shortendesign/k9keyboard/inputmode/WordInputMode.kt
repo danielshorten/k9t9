@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard.inputmode
 
+import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.entity.Word
@@ -17,7 +18,7 @@ class WordInputMode(
     private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
-    private var typingSinceUpperMode = false
+    private var typingSinceModeChange = false
 
     override val status: Status
         get() = this.currentStatus
@@ -53,12 +54,14 @@ class WordInputMode(
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
-        if (currentStatus == Status.WORD_UPPER) {
-            typingSinceUpperMode = true
-        }
+        typingSinceModeChange = true
         if (setOf(Status.WORD_CAP, Status.WORD_UPPER).contains(currentStatus)) {
             caseMask = registerMaskDigit(caseMask, codeWord.length - 1)
         }
+        if (currentStatus == Status.WORD_CAP) {
+            currentStatus = Status.WORD
+        }
+        Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
 
@@ -92,13 +95,23 @@ class WordInputMode(
         var consumed = true
 
         currentStatus = when (currentStatus) {
-            Status.WORD -> Status.WORD_CAP
+            Status.WORD -> {
+                if (typingSinceModeChange) {
+                    typingSinceModeChange = false
+                    Status.WORD_CAP
+                }
+                else {
+                    typingSinceModeChange = false
+                    Status.WORD_UPPER
+                }
+            }
             Status.WORD_CAP -> {
-                typingSinceUpperMode = false
-                Status.WORD_UPPER
+                typingSinceModeChange = false
+                Status.WORD
             }
             Status.WORD_UPPER -> {
-                if (typingSinceUpperMode) {
+                if (typingSinceModeChange) {
+                    typingSinceModeChange = false
                     Status.WORD
                 } else {
                     consumed = false
@@ -110,7 +123,9 @@ class WordInputMode(
                 currentStatus
             }
         }
-
+        if (!consumed) {
+            finishComposing()
+        }
         return state(consumed)
     }
 
