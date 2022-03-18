@@ -123,11 +123,11 @@ class WordInputModeTest {
         assertEquals("'next' should return a code word",
             "2255", result1.codeWord)
         assertEquals("First candidate should be 'call'",
-            "call", candidate1)
+            "Call", candidate1)
         assertEquals("Second candidate should be 'ball'",
-            "ball", candidate2)
+            "Ball", candidate2)
         assertEquals("Third candidate should be 'call' again",
-            "call", candidate3)
+            "Call", candidate3)
     }
 
     @Test
@@ -175,7 +175,7 @@ class WordInputModeTest {
         )
 
         assertEquals("the word should just be the letters that were typed",
-            "bala", candidate)
+            "Bala", candidate)
     }
 
     @Test

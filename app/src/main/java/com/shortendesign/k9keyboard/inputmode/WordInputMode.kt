@@ -61,7 +61,7 @@ class WordInputMode(
         if (currentStatus == Status.WORD_CAP) {
             currentStatus = Status.WORD
         }
-        Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
+        //Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
 
