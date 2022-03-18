@@ -203,8 +203,14 @@ class WordInputMode(
          */
         fun registerMaskDigit(mask: UInt, idx: Int, on: Boolean = true): UInt {
             return when(on) {
+                // ORing with shifted bit to switch it on
                 true -> mask or (1u shl idx)
-                false -> mask xor (1u shl idx)
+                false -> if (mask shr idx and 1u == 1u)
+                            // XORing with shifted bit to switch it off
+                            // Only do XOR if the bit is on in the first place
+                            mask xor (1u shl idx)
+                        else
+                            mask
             }
         }
 
