@@ -1,9 +1,7 @@
 package com.shortendesign.k9keyboard.inputmode
 
-import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
-import com.shortendesign.k9keyboard.entity.Word
 import com.shortendesign.k9keyboard.util.Key
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
@@ -15,9 +13,9 @@ class WordInputMode(
     val codeWord = StringBuilder()
     private var caseMask: UInt = 0u
     private var candidateIdx: Int = 0
-    private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
+    private var lastWordWasPeriod = false
     private var typingSinceModeChange = false
 
     override val status: Status
@@ -81,6 +79,9 @@ class WordInputMode(
 
     private fun addSpace(): KeyPressResult {
         finishComposing()
+        if (lastWordWasPeriod) {
+            currentStatus = Status.WORD_CAP
+        }
         return state(consumed = true, word = " ")
     }
 
@@ -144,20 +145,18 @@ class WordInputMode(
         )
     }
 
-    private fun finishComposing(): String? {
-        var word = cachedCandidates?.get(candidateIdx)?.word
-        if (word != null && word.length > codeWord.length) {
-            word = word.substring(0, codeWord.length)
-        }
-        cachedCandidates = null
+    private fun finishComposing() {
         codeWord.clear()
         caseMask = 0u
         candidateIdx = 0
-        return word
     }
 
     private fun isComposing(): Boolean {
         return codeWord.isNotEmpty()
+    }
+
+    private fun checkForPeriod(candidateWord: String) {
+        lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
     }
 
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
@@ -186,6 +185,7 @@ class WordInputMode(
             candidateWord = applyCaseMask(candidateWord, caseMask)
 
             lastResolvedCodeWord = codeWord
+            checkForPeriod(candidateWord)
             return candidateWord
         }
         // If this was the final chance to resolve the code word, and we couldn't, reset to the last

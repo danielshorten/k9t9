@@ -140,7 +140,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
         val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
-        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
+        //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate
@@ -267,9 +267,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
         if (preloadJob == null || !preloadJob!!.isActive) {
             preloadJob = scope.launch {
-                Log.d(LOG_TAG, "Starting trie preload...")
                 doPreloadTrie(key, minKeyLength, 200, retryCandidates = retryCandidates)
-                Log.d(LOG_TAG, "Preload finished.")
             }
         }
     }
