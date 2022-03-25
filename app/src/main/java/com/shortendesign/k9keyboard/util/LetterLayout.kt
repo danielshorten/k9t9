@@ -16,5 +16,5 @@ object LetterLayout {
         Key.POUND to listOf('#'),
     )
 
-    val nonAlphaNumeric = setOf('\'', '.', '?', '!', '*', '#')
+    val nonAlphaNumeric = setOf('*','#','\'','.','?','!',',','-','@','$',':','(',')')
 }

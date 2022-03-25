@@ -123,11 +123,11 @@ class WordInputModeTest {
         assertEquals("'next' should return a code word",
             "2255", result1.codeWord)
         assertEquals("First candidate should be 'call'",
-            "call", candidate1)
+            "Call", candidate1)
         assertEquals("Second candidate should be 'ball'",
-            "ball", candidate2)
+            "Ball", candidate2)
         assertEquals("Third candidate should be 'call' again",
-            "call", candidate3)
+            "Call", candidate3)
     }
 
     @Test
@@ -175,7 +175,7 @@ class WordInputModeTest {
         )
 
         assertEquals("the word should just be the letters that were typed",
-            "bala", candidate)
+            "Bala", candidate)
     }
 
     @Test
@@ -193,4 +193,32 @@ class WordInputModeTest {
         assertEquals("The candidate should be I'm",
             "I'm", candidate)
     }
+
+    @Test
+    fun testRegisterMaskDigit() {
+        val startingMask = 0u
+
+        // Switch on index 0
+        val mask1 = WordInputMode.registerMaskDigit(startingMask, 0)
+        assertEquals("1", Integer.toBinaryString(mask1.toInt()))
+
+        // Switch on index 2 from previous mask
+        val mask2 = WordInputMode.registerMaskDigit(mask1, 2)
+        assertEquals("101", Integer.toBinaryString(mask2.toInt()))
+
+        // Switch off index 0 from previous mask
+        val mask3 = WordInputMode.registerMaskDigit(mask2, 0, false)
+        assertEquals("100", Integer.toBinaryString(mask3.toInt()))
+    }
+
+    @Test
+    fun testRegisterMaskDigitSwitchingOffZero() {
+        // 1000
+        val startingMask = 1u shl 3
+
+        // Attempt to switch off index 5
+        val mask1 = WordInputMode.registerMaskDigit(startingMask, 5, false)
+        assertEquals("1000", Integer.toBinaryString(mask1.toInt()))
+    }
+
 }

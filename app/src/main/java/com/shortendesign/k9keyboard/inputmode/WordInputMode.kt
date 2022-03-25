@@ -13,10 +13,12 @@ class WordInputMode(
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
+    private var caseMask: UInt = 0u
     private var candidateIdx: Int = 0
     private var cachedCandidates: List<Word>? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
+    private var typingSinceModeChange = false
 
     override val status: Status
         get() = this.currentStatus
@@ -40,6 +42,9 @@ class WordInputMode(
             keypad.isNext(key) -> {
                 nextCandidate()
             }
+            keypad.isShift(key) -> {
+                shiftMode()
+            }
             else -> {
                 finishComposing()
                 state(consumed = false)
@@ -49,6 +54,14 @@ class WordInputMode(
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
+        typingSinceModeChange = true
+        if (setOf(Status.WORD_CAP, Status.WORD_UPPER).contains(currentStatus)) {
+            caseMask = registerMaskDigit(caseMask, codeWord.length - 1)
+        }
+        if (currentStatus == Status.WORD_CAP) {
+            currentStatus = Status.WORD
+        }
+        //Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
 
@@ -56,6 +69,7 @@ class WordInputMode(
         var consumed = false
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
+            caseMask = registerMaskDigit(caseMask, codeWord.length, false)
             consumed = codeWord.isNotEmpty()
             // If we've deleted the whole word we were composing, reset the candidate index
             if (!consumed) {
@@ -75,6 +89,44 @@ class WordInputMode(
             candidateIdx++
         }
         return state(true)
+    }
+
+    private fun shiftMode(): KeyPressResult {
+        var consumed = true
+
+        currentStatus = when (currentStatus) {
+            Status.WORD -> {
+                if (typingSinceModeChange) {
+                    typingSinceModeChange = false
+                    Status.WORD_CAP
+                }
+                else {
+                    typingSinceModeChange = false
+                    Status.WORD_UPPER
+                }
+            }
+            Status.WORD_CAP -> {
+                typingSinceModeChange = false
+                Status.WORD
+            }
+            Status.WORD_UPPER -> {
+                if (typingSinceModeChange) {
+                    typingSinceModeChange = false
+                    Status.WORD
+                } else {
+                    consumed = false
+                    Status.WORD_UPPER
+                }
+            }
+            else -> {
+                consumed = false
+                currentStatus
+            }
+        }
+        if (!consumed) {
+            finishComposing()
+        }
+        return state(consumed)
     }
 
     private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null): KeyPressResult {
@@ -99,6 +151,7 @@ class WordInputMode(
         }
         cachedCandidates = null
         codeWord.clear()
+        caseMask = 0u
         candidateIdx = 0
         return word
     }
@@ -109,6 +162,7 @@ class WordInputMode(
 
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
         if (!candidates.isEmpty()) {
+            // Get the candidate at the correct index, based on which one we've chosen
             var candidateWord = when {
                 candidateIdx < candidates.count() -> candidates[candidateIdx]
                 candidateIdx >= candidates.count() -> candidates[0]
@@ -119,13 +173,18 @@ class WordInputMode(
                 candidateIdx = 0
             }
 
-            // Replace the code word
-            //Log.d(LOG_TAG,"CODEWORD BEFORE: ${this.codeWord}")
+            // Replace the code word with the one we're resolving.
+            // This handles the case where we've recorded a bunch of key presses but haven't been
+            // able to resolve them to any actual word.  We keep the codeWord for the ones we found.
             this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
-            //Log.d(LOG_TAG,"CODEWORD AFTER: ${this.codeWord}")
+            // Truncate the word if it's longer than the actual number of keys that have been
+            // pressed.
             if (candidateWord.length > codeWord.length) {
                 candidateWord = candidateWord.substring(0, codeWord.length)
             }
+
+            candidateWord = applyCaseMask(candidateWord, caseMask)
+
             lastResolvedCodeWord = codeWord
             return candidateWord
         }
@@ -135,5 +194,34 @@ class WordInputMode(
             this.codeWord.replace(0, maxOf(this.codeWord.length, 0), lastResolvedCodeWord!!)
         }
         return null
+    }
+
+    companion object {
+        /**
+         * Get a new mask from the given one by setting or clearing a binary digit at the specified
+         * index.
+         */
+        fun registerMaskDigit(mask: UInt, idx: Int, on: Boolean = true): UInt {
+            return when(on) {
+                // ORing with shifted bit to switch it on
+                true -> mask or (1u shl idx)
+                false -> if (mask shr idx and 1u == 1u)
+                            // XORing with shifted bit to switch it off
+                            // Only do XOR if the bit is on in the first place
+                            mask xor (1u shl idx)
+                        else
+                            mask
+            }
+        }
+
+        fun applyCaseMask(word: String, mask: UInt): String {
+            val builder = StringBuilder(word)
+            builder.forEachIndexed { idx, char ->
+                if ((mask shr idx) and 1u == 1u) {
+                    builder[idx] = char.uppercaseChar()
+                }
+            }
+            return builder.toString()
+        }
     }
 }
