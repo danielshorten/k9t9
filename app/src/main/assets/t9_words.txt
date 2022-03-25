@@ -28486,7 +28486,7 @@ fantasy
 fantasy's
 fantod
 fanwise
-far
+far 3
 farad
 faradic
 faradisation
@@ -29110,7 +29110,7 @@ feverous
 feverously
 fevers
 feverwort
-few
+few 3
 fewer
 fewest
 fewness
@@ -33418,7 +33418,7 @@ gonococcus
 gonorrhoea
 gonorrhoeal
 goober
-good 4
+good 5
 goodbye
 goodbyes
 goodbye's
@@ -36457,7 +36457,7 @@ holytide
 homage
 hombre
 homburg
-home 5
+home 4
 homebody
 homebound
 homebred
@@ -47390,7 +47390,7 @@ mincemeat
 minces
 mincing
 mincingly
-mind
+mind 3
 minded
 mindedness
 minder
@@ -47403,7 +47403,7 @@ mindless
 mindlessly
 mindlessness
 minds
-mine
+mine 4
 mined
 minefield
 minelayer
@@ -48743,14 +48743,14 @@ mouthwash
 mouthy
 movable
 movably
-move
+move 3
 moved
 movement
 movements
 movement's
 mover
 movers
-moves
+moves 3
 movie
 moviegoer
 moviemaker
@@ -49501,7 +49501,7 @@ necrotic
 nectar
 nectarine
 nee
-need
+need 3
 needed
 needful
 needfulness
@@ -49884,7 +49884,7 @@ nimbus
 nimbuses
 nimiety
 nincompoop
-nine
+nine 2
 ninebark
 ninepin
 ninepins
@@ -50166,7 +50166,7 @@ notch
 notched
 notches
 notching
-note
+note 4
 notebook
 notebooks
 notebook's
@@ -50174,7 +50174,7 @@ notecase
 noted
 notelet
 notepaper
-notes
+notes 4
 noteworthiness
 noteworthy
 nothing
@@ -55916,7 +55916,7 @@ pounce
 pounced
 pounces
 pouncing
-pound
+pound 3
 poundage
 poundal
 pounded
@@ -62376,7 +62376,7 @@ rouging
 roulade
 roulette
 roulettes
-round
+round 2
 roundabout
 rounded
 roundedness
@@ -66220,7 +66220,7 @@ sloughing
 sloughs
 slovenliness
 slovenly
-slow
+slow 3
 slowcoach
 slowdown
 slowed
@@ -66230,7 +66230,7 @@ slowing
 slowly
 slowness
 slowpoke
-slows
+slows 3
 slowworm
 sludge
 sludgy
@@ -66601,7 +66601,7 @@ snotty
 snout
 snout's
 snouts
-snow
+snow 3
 snowball
 snowballed
 snowballing
@@ -67053,7 +67053,7 @@ soulfully
 soulless
 soullessly
 souls
-sound
+sound 4
 soundboard
 sounded
 sounder
@@ -68559,7 +68559,7 @@ stile
 stile's
 stiles
 stiletto
-still
+still 3
 stillbirth
 stillbirths
 stillborn

@@ -139,7 +139,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
-        val candidates = t9Trie.getCandidates(codeWord, 10, codeWord.length)
+        val candidates = t9Trie.getCandidates(codeWord, 7, codeWord.length)
         //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
