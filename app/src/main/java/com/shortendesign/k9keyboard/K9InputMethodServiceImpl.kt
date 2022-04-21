@@ -51,6 +51,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     // Keep track of recently preloaded keys to reduce unnecessary loading
     private val preloadsToCache = 3
     private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
+    private var retryCodeWordAfterPreload: String? = null
 
     // Keep track of if we're composing to help committing the finished word
     private var isComposing = false
@@ -265,10 +266,14 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+        // Only start a preload job if there isn't one active
         if (preloadJob == null || !preloadJob!!.isActive) {
             preloadJob = scope.launch {
                 doPreloadTrie(key, minKeyLength, 200, retryCandidates = retryCandidates)
             }
+        } else {
+            // If there's a job active but we wanted to retry, store that info
+            retryCodeWordAfterPreload = key
         }
     }
 
@@ -294,12 +299,13 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
         val words = wordDao.findCandidates(key, numCandidates)
         for (word in words) {
-//            Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
+            //Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
             t9Trie.add(word.code, word.word, word.frequency)
         }
-        if (retryCandidates) {
-            resolveCodeWord(key, 1, true)
+        if (retryCandidates || retryCodeWordAfterPreload != null) {
+            resolveCodeWord(retryCodeWordAfterPreload?: key, 1, true)
         }
+        retryCodeWordAfterPreload = null
         //t9Trie.prune(key, depth = 3)
     }
 

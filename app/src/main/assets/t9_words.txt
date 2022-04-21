@@ -7206,7 +7206,7 @@ bilked
 bilker
 bilking
 bilks
-bill
+bill 3
 billable
 billabong
 billboard
@@ -32184,7 +32184,7 @@ gantlet
 gantries
 gantry
 gaol
-gap
+gap 3
 gape
 gaped
 gaper
@@ -32281,7 +32281,7 @@ gartering
 garters
 garter's
 garth
-gas
+gas 4
 gasbag
 gaseous
 gaseousness
@@ -35236,7 +35236,7 @@ harvesting
 harvestman
 harvestmen
 harvests
-has
+has 5
 hash
 hashed
 hasher
