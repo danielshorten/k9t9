@@ -71,7 +71,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        Log.i(LOG_TAG, "keyCode: $keyCode")
+        //Log.i(LOG_TAG, "keyCode: $keyCode")
         var consumed = false
         val mode = this.mode
         if (mode != null) {
@@ -94,7 +94,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private fun handleUnconsumedKeyEvent(event: KeyEvent?): Boolean {
         // Delete or back
         if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+            // If the input mode isn't handling the delete, we've definitely finished composing
             finishComposing()
+            // Since we're not composing, we should make sure there's no job trying to resolve some
+            // candidate
+            preloadJob?.cancel()
             return if (cursorPosition > 0) {
                 inputConnection?.deleteSurroundingText(1, 0)
                 true
@@ -143,6 +147,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         val candidates = t9Trie.getCandidates(codeWord, 7, codeWord.length)
         //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
+        //Log.d(LOG_TAG, "Composing Text: $candidate - $cursorPosition")
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate
     }
@@ -201,9 +206,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         return wordDao.findCandidates(word)
     }
 
-    override fun setComposingText(text: String, cursorPosition: Int) {
-        inputConnection?.setComposingText(text, cursorPosition)
-    }
+//    override fun setComposingText(text: String, cursorPosition: Int) {
+//        supe
+//        inputConnection?.setComposingText(text, cursorPosition)
+//    }
 
     override fun commitText(text: String, cursorPosition: Int) {
         inputConnection?.commitText(text, cursorPosition)

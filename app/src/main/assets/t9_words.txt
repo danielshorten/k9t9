@@ -5690,7 +5690,7 @@ banana
 bananas
 banana's
 banc
-band
+band 4
 bandage
 bandaged
 bandager
@@ -6546,7 +6546,7 @@ befogged
 befogging
 befogs
 befool
-before
+before 4
 beforehand
 beforetime
 befoul
@@ -8242,7 +8242,7 @@ boisterously
 boisterousness
 bola
 bolas
-bold
+bold 4
 bolder
 boldest
 boldface
@@ -9946,7 +9946,7 @@ bustling
 bustlingly
 busts
 busty
-busy
+busy 4
 busybody
 busying
 busyness
@@ -10396,7 +10396,7 @@ cambering
 cambial
 cambium
 cambric
-came
+came 5
 camel
 camelback
 cameleer
@@ -10532,7 +10532,7 @@ candy
 candyfloss
 candying
 candytuft
-cane
+cane 3
 canebrake
 caned
 canella
@@ -13369,7 +13369,7 @@ clevis
 clianthus
 cliché
 clichés
-click
+click 4
 clicked
 clicker
 clickers
@@ -14028,7 +14028,7 @@ coir
 coital
 coition
 coitus
-coke
+coke 3
 cokes
 coking
 col
@@ -14038,7 +14038,7 @@ colanders
 colatitudes
 colcannon
 colcothar
-cold
+cold 5
 colder
 coldest
 coldheartedly
@@ -23030,7 +23030,7 @@ dodgy
 dodo
 dodos
 dodo's
-doe
+doe 3
 doer
 doers
 does
@@ -23221,7 +23221,7 @@ dooms
 doomsayer
 doomsday
 doomster
-door
+door 5
 doorbell
 doorframe
 doorjamb
@@ -24694,7 +24694,7 @@ eightieth
 eights
 eighty
 einsteinium
-either
+either 4
 ejaculate
 ejaculated
 ejaculates
@@ -25548,7 +25548,7 @@ encyclopaedic
 encyclopaedically
 encyclopaedism
 encyclopaedist
-end
+end 5
 endanger
 endangered
 endangering
@@ -30347,7 +30347,7 @@ focuser
 focuses
 focusing
 fodder
-foe
+foe 4
 foeman
 foes
 foe's
@@ -36701,7 +36701,7 @@ hopelessness
 hoper
 hopes
 hophead
-hoping
+hoping 4
 hoplite
 hopped
 hopper
@@ -36830,7 +36830,7 @@ hoses
 hose's
 hosier
 hosiery
-hosing
+hosing 3
 hospice
 hospices
 hospitable
@@ -43837,7 +43837,7 @@ lesbianism
 lesbians
 lesion
 lesions
-less
+less 4
 lessee
 lessen
 lessened
@@ -43850,7 +43850,7 @@ lessoning
 lessons
 lesson's
 lest
-let
+let 4
 letch
 letdown
 letdowns
@@ -43888,7 +43888,7 @@ levanter
 levee
 levees
 levee's
-level
+level 4
 levelled
 leveller
 levellers
@@ -44941,7 +44941,7 @@ lost
 lot
 lotion
 lotions
-lots
+lots 4
 lot's
 lotteries
 lottery
@@ -48506,7 +48506,7 @@ mordancy
 mordant
 mordantly
 mordent
-more
+more 4
 morel
 moreover
 mores
@@ -49783,7 +49783,7 @@ newsworthy
 newsy
 newt
 newts
-next
+next 4
 nexus
 nexuses
 niacin
@@ -50116,7 +50116,7 @@ northward
 northwards
 northwest
 northwester
-nose
+nose 3
 nosebag
 nosebags
 nosebag's
@@ -50977,11 +50977,11 @@ on 5
 once
 oncology
 oncoming
-one
+one 5
 oneness
 onerous
 onerously
-ones
+ones 5
 one's
 oneself
 onetime
@@ -51006,7 +51006,7 @@ onside
 onslaught
 onslaughts
 onstage
-onto
+onto 5
 ontogenesis
 ontogenetic
 ontogenetically
@@ -53219,7 +53219,7 @@ peacocks
 peacock's
 peafowl
 peahen
-peak
+peak 4
 peaked
 peaking
 peaks
@@ -55308,7 +55308,7 @@ poisoning
 poisonous
 poisonously
 poisons
-poke
+poke 3
 pokeberry
 poked
 poker
@@ -57884,7 +57884,7 @@ purse
 pursed
 purser
 pursers
-purses
+purses 3
 pursier
 pursiness
 pursing
@@ -59065,7 +59065,7 @@ reaffirming
 reaffirms
 reagent
 reagents
-real
+real 5
 realest
 realign
 realigned
@@ -60795,7 +60795,7 @@ replications
 replied
 replier
 replies
-reply
+reply 5
 replying
 report
 reportable
@@ -62188,7 +62188,7 @@ roister
 roistered
 roisterer
 roistering
-role
+role 4
 role's
 roles
 roll
@@ -62321,7 +62321,7 @@ rotate
 rotated
 rotates
 rotating
-rotation
+rotation 4
 rotational
 rotationally
 rotations
@@ -63872,7 +63872,7 @@ seagull
 seagulls
 seahorse
 seakale
-seal
+seal 3
 sealant
 sealants
 sealed
@@ -64565,7 +64565,7 @@ session's
 sessions
 sestet
 sestina
-set
+set 5
 set's
 seta
 setaceous
@@ -64574,7 +64574,7 @@ setback
 setbacks
 setline
 setoff
-sets
+sets 5
 setscrew
 setscrews
 settable
@@ -65732,7 +65732,7 @@ situating
 situation
 situational
 situations
-six
+six 4
 sixes
 sixpence
 sixpences
@@ -66797,7 +66797,7 @@ solaced
 solacing
 solar
 solarium
-sold
+sold 5
 solder
 soldered
 soldering
@@ -67010,7 +67010,7 @@ sorcery
 sordid
 sordidly
 sordidness
-sore
+sore 4
 sorehead
 sorely
 soreness
@@ -67030,7 +67030,7 @@ sorrowful
 sorrowfully
 sorrowfulness
 sorrows
-sorry
+sorry 4
 sort
 sorted
 sorter
@@ -70067,7 +70067,7 @@ supervisors
 supervisory
 supine
 supinely
-supper
+supper 4
 supper's
 suppers
 supping
