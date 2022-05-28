@@ -229,8 +229,8 @@ class WordInputModeTest {
         )
 
         assertEquals(
-            "Cursor is before the word 'cursor', so we should get that word",
-            "cursor", word)
+            "Cursor is after the word 'cursor', so we shouldn't recompose",
+            null, word)
     }
 
     @Test
@@ -241,7 +241,7 @@ class WordInputModeTest {
         )
 
         assertEquals(
-            "Cursor is in the middle of the word 'before', so we should get that word",
+            "Cursor is in the middle of the word 'before', so we should recompose that word",
             "before", word)
     }
 

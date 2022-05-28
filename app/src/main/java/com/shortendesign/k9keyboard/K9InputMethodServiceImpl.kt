@@ -173,10 +173,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         )
         if (word != null) {
             if (oldSelStart < newSelStart) {
-                inputConnection?.deleteSurroundingText(0, word.length)
+                inputConnection?.deleteSurroundingText(1, word.length - 1)
             }
             else {
-                inputConnection?.deleteSurroundingText(word.length, 0)
+                inputConnection?.deleteSurroundingText(word.length - 1, 1)
             }
             inputConnection?.setComposingText(word, cursorPosition)
             isComposing = true
