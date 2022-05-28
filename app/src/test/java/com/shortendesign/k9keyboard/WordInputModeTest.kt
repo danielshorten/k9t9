@@ -221,4 +221,40 @@ class WordInputModeTest {
         assertEquals("1000", Integer.toBinaryString(mask1.toInt()))
     }
 
+    @Test
+    fun testShouldRecomposeWordEndOfWord() {
+        val word = mode?.shouldRecomposeWord(
+            "This is the text before the cursor",
+            ". And this is the text after the cursor."
+        )
+
+        assertEquals(
+            "Cursor is before the word 'cursor', so we should get that word",
+            "cursor", word)
+    }
+
+    @Test
+    fun testShouldRecomposeWordMiddleOfWord() {
+        val word = mode?.shouldRecomposeWord(
+            "This is the text bef",
+            "ore the cursor. And this is the text after the cursor."
+        )
+
+        assertEquals(
+            "Cursor is in the middle of the word 'before', so we should get that word",
+            "before", word)
+    }
+
+    @Test
+    fun testShouldRecomposeWordBetweenWords() {
+        val word = mode?.shouldRecomposeWord(
+            "This is the text before the cursor.",
+            " And this is the text after the cursor."
+        )
+
+        assertEquals(
+            "Cursor is between a period and a space - shouldn't recompose",
+            null, word)
+    }
+
 }

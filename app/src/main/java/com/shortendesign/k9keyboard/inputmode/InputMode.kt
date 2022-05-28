@@ -8,5 +8,7 @@ interface InputMode {
 
     fun getKeyCodeResult(keyCode: Int): KeyPressResult?
 
+    fun shouldRecomposeWord(beforeCursor: CharSequence?, afterCursor: CharSequence?): String?
+
     fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean = false): String?
 }

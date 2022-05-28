@@ -53,7 +53,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
     private var retryCodeWordAfterPreload: String? = null
 
-    // Keep track of if we're composing to help committing the finished word
+    // Keep track of if we're composing - we use this to help know when to commit a finished word
     private var isComposing = false
 
     private var inputConnection: InputConnection? = null
@@ -99,10 +99,12 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // Since we're not composing, we should make sure there's no job trying to resolve some
             // candidate
             preloadJob?.cancel()
+            // If we aren't at the very beginning of the input, delete one character
             return if (cursorPosition > 0) {
                 inputConnection?.deleteSurroundingText(1, 0)
                 true
             } else
+                // Otherwise, don't handle this key press so that it bubbles up as "back"
                 false
         }
         else if (event?.keyCode == KeyEvent.KEYCODE_POUND) {
@@ -119,17 +121,24 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             currentMode == K9InputType.WORD.idx && !areWordsInitialized -> {
                 return
             }
+            // Handle the case where the input mode returns a code word to be resolved.
             result.codeWord != null -> {
                 isComposing = true
+                // Attempt to resolve a word candidate from the mode's sequence of key presses
                 val candidate = resolveCodeWord(result.codeWord, 1)
-
+                // Ensure our T9 trie is primed with candidates for the current code word prefix
+                // (it gets cleared periodically to free up memory, so needs to be reprimed).
+                // This will also retry resolving the candidate if the above attempt returned null.
                 preloadTrie(result.codeWord, 2, retryCandidates = candidate == null)
             }
+            // Handle the case where the input mode returns a literal word to be added to the input
             result.word != null -> {
                 // TODO: Support a delay for committing the word
                 finishComposing()
                 inputConnection?.commitText(result.word, 1)
             }
+            // If we get nothing back, it's some unhandled action and we'll assume we should be
+            // committing the current composition.
             else -> {
                 finishComposing()
             }
@@ -158,7 +167,20 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
-        //Log.d(LOG_TAG, "Cursor pos: $newSelEnd")
+        val word = mode?.shouldRecomposeWord(
+            inputConnection?.getTextBeforeCursor(25, 0),
+            inputConnection?.getTextAfterCursor(25, 0)
+        )
+        if (word != null) {
+            if (oldSelStart < newSelStart) {
+                inputConnection?.deleteSurroundingText(0, word.length)
+            }
+            else {
+                inputConnection?.deleteSurroundingText(word.length, 0)
+            }
+            inputConnection?.setComposingText(word, cursorPosition)
+            isComposing = true
+        }
         cursorPosition = newSelEnd
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
@@ -323,15 +345,14 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         // TODO: Enumerate the settings keys
         scope.launch {
             val setting = settingDao.getByKey("initialized")
-            if (setting == null) {
+            areWordsInitialized = if (setting == null) {
                 Log.d(LOG_TAG,"Initializing word database...")
                 initializeWords()
                 Setting.set("initialized", "t", settingDao)
-                areWordsInitialized = true
-            }
-            else {
+                true
+            } else {
                 Log.d(LOG_TAG, "Word database already initialized")
-                areWordsInitialized = true
+                true
             }
         }
     }

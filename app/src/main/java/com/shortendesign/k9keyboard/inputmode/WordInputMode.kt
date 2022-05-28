@@ -21,6 +21,25 @@ class WordInputMode(
     override val status: Status
         get() = this.currentStatus
 
+    private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
+    private val shouldRecomposeAfterRegex = """^([\w]*)""".toRegex()
+
+    override fun shouldRecomposeWord(beforeCursor: CharSequence?, afterCursor: CharSequence?): String? {
+
+        val beforeMatches = if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
+        val afterMatches = if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
+        var word = ""
+
+        if (beforeMatches != null) {
+            word += beforeMatches.groups[0]?.value
+        }
+        if (afterMatches != null) {
+            word += afterMatches.groups[0]?.value
+        }
+
+        return if (word.isEmpty()) null else word
+    }
+
     override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key)
