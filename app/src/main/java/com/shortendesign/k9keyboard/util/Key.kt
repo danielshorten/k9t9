@@ -11,12 +11,12 @@ enum class Key(val code: Char) {
     N7('7'),
     N8('8'),
     N9('9'),
-    STAR('*'),
-    POUND('#'),
-    DPAD_UP('a'),
-    DPAD_DOWN('b'),
-    DPAD_LEFT('c'),
-    DPAD_RIGHT('d'),
-    DPAD_SELECT('e'),
-    BACK('f')
+    NEXT('*'),
+    SHIFT('#'),
+    UP('a'),
+    DOWN('b'),
+    LEFT('c'),
+    RIGHT('d'),
+    SELECT('e'),
+    DELETE('f')
 }

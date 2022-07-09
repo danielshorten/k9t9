@@ -23,6 +23,8 @@ import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
+import java.io.File
+import java.io.FileWriter
 import java.util.concurrent.ArrayBlockingQueue
 
 
@@ -68,15 +70,34 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         wordDao = db.getWordDao()
         settingDao = db.getSettingDao()
         initializeWordsFirstTime()
+        //writeToFile()
     }
 
+//    fun writeToFile() {
+//        val dir = applicationContext.getExternalFilesDir(null)
+//        if (dir?.exists() == false) {
+//            dir.mkdir()
+//        }
+//
+//        try {
+//            val gpxfile = File(dir, "k9test.txt")
+//            val writer = FileWriter(gpxfile)
+//            writer.append("My test content.")
+//            writer.flush()
+//            writer.close()
+//            Log.d(LOG_TAG, "Wrote to file $gpxfile")
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        //Log.i(LOG_TAG, "keyCode: $keyCode")
+        Log.i(LOG_TAG, "keyCode: $keyCode")
         var consumed = false
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
-            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
+            Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
