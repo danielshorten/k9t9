@@ -222,7 +222,7 @@ class WordInputModeTest {
 
     @Test
     fun testShouldRecomposeWordEndOfWord() {
-        val word = mode?.shouldRecomposeWord(
+        val word = mode?.recompose(
             "This is the text before the cursor",
             ". And this is the text after the cursor."
         )
@@ -234,7 +234,7 @@ class WordInputModeTest {
 
     @Test
     fun testShouldRecomposeWordMiddleOfWord() {
-        val word = mode?.shouldRecomposeWord(
+        val word = mode?.recompose(
             "This is the text bef",
             "ore the cursor. And this is the text after the cursor."
         )
@@ -246,7 +246,7 @@ class WordInputModeTest {
 
     @Test
     fun testShouldRecomposeWordBetweenWords() {
-        val word = mode?.shouldRecomposeWord(
+        val word = mode?.recompose(
             "This is the text before the cursor.",
             " And this is the text after the cursor."
         )

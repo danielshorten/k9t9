@@ -23,8 +23,6 @@ import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
-import java.io.File
-import java.io.FileWriter
 import java.util.concurrent.ArrayBlockingQueue
 
 
@@ -188,22 +186,31 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
-        val word = mode?.shouldRecomposeWord(
+        cursorPosition = newSelEnd
+        val result = mode?.recompose(
             inputConnection?.getTextBeforeCursor(25, 0),
             inputConnection?.getTextAfterCursor(25, 0)
         )
-        if (word != null) {
-            if (oldSelStart < newSelStart) {
-                inputConnection?.deleteSurroundingText(1, word.length - 1)
+        if (result != null) {
+            if (!isComposing) {
+                if (oldSelStart < newSelStart) {
+                    inputConnection?.deleteSurroundingText(1, result.word!!.length - 1)
+                }
+                else {
+                    inputConnection?.deleteSurroundingText(result.word!!.length - 1, 1)
+                }
+                inputConnection?.setComposingText(result.word, 0)
+                isComposing = true
+                preloadTrie(result.codeWord!!, 2)
             }
             else {
-                inputConnection?.deleteSurroundingText(word.length - 1, 1)
+                if (oldSelStart > newSelStart) {
+                    finishComposing()
+                    cursorPosition = oldSelStart - result.word!!.length
+                }
             }
-            inputConnection?.setComposingText(word, cursorPosition)
-            isComposing = true
         }
-        cursorPosition = newSelEnd
-        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        super.onUpdateSelection(oldSelStart, oldSelEnd, cursorPosition, cursorPosition, candidatesStart, candidatesEnd)
     }
 
     override fun onCreateCandidatesView(): View {

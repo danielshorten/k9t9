@@ -12,7 +12,10 @@ class WordInputMode(
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
     private var caseMask: UInt = 0u
+    // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
+    // Specific word to set as candidate (recomposing)
+    private val candidateWord: String? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
     private var lastWordWasPeriod = false
@@ -24,14 +27,17 @@ class WordInputMode(
     private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
 
-    override fun shouldRecomposeWord(beforeCursor: CharSequence?, afterCursor: CharSequence?): String? {
+    override fun recompose(beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult? {
 
         val beforeMatches = if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
         val afterMatches = if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
         if (beforeMatches == null || afterMatches == null) {
             return null
         }
-        return beforeMatches.groups[0]?.value + afterMatches.groups[0]?.value
+        val recomposingWord = beforeMatches.groups[0]?.value + afterMatches.groups[0]?.value
+        codeWord.clear()
+        codeWord.append(keypad.getCodeForWord(recomposingWord))
+        return state(word = recomposingWord)
     }
 
     override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
@@ -60,7 +66,7 @@ class WordInputMode(
                 var isConsumed = false;
                 if (codeWord.isNotEmpty()) {
                     finishComposing()
-                    // Treat DPAD_RIGH1T as consumed to allow pressing right to end composing but not
+                    // Treat DPAD_RIGHT as consumed to allow pressing right to end composing but not
                     // send it on as a keypress to move to the next input or something annoying.
                     isConsumed = key == Key.RIGHT
                 }

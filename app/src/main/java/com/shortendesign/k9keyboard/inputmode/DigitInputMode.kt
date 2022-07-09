@@ -16,7 +16,7 @@ class NumberInputMode (
         return getKeyPressResult(key)
     }
 
-    override fun shouldRecomposeWord(beforeCursor: CharSequence?, afterCursor: CharSequence?): String? {
+    override fun recompose(beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult? {
         return null
     }
 
