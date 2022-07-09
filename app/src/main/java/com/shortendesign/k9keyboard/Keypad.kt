@@ -53,19 +53,19 @@ class Keypad(
     // Is this the delete key?
     fun isDelete(key: Key): Boolean {
         // hard coded for now
-        return key == Key.BACK
+        return key == Key.DELETE
     }
 
     // Is this the next-candidate key?
     fun isNext(key: Key): Boolean {
         // hard coded for now
-        return key == Key.STAR
+        return key == Key.NEXT
     }
 
     // Is this the next-candidate key?
     fun isShift(key: Key): Boolean {
         // hard coded for now
-        return key == Key.POUND
+        return key == Key.SHIFT
     }
 
     // Is this the space key?

@@ -49,7 +49,7 @@ class WordInputMode(
                     finishComposing()
                     // Treat DPAD_RIGH1T as consumed to allow pressing right to end composing but not
                     // send it on as a keypress to move to the next input or something annoying.
-                    isConsumed = key == Key.DPAD_RIGHT
+                    isConsumed = key == Key.RIGHT
                 }
                 state(isConsumed)
             }

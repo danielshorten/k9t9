@@ -4,7 +4,6 @@ import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.util.Key
 import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
-import com.shortendesign.k9keyboard.util.TestUtil
 import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
@@ -50,7 +49,7 @@ class WordInputModeTest {
         mode.getKeyPressResult(Key.N2)
         mode.resolveCodeWord("2", listOf("a"), true)
 
-        val result = mode.getKeyPressResult(Key.BACK)
+        val result = mode.getKeyPressResult(Key.DELETE)
 
         // Consumed is false because we're deleting the last character in the word we're composing,
         // so we delegate to the input method to delete and reset things for us.
@@ -64,7 +63,7 @@ class WordInputModeTest {
      */
     @Test
     fun testDeleteLetterNoText() {
-        val result = mode!!.getKeyPressResult(Key.BACK)
+        val result = mode!!.getKeyPressResult(Key.DELETE)
 
         assertEquals(false, result.consumed)
         //assertEquals(0, result.cursorPosition)
@@ -94,7 +93,7 @@ class WordInputModeTest {
      */
     @Test
     fun testNextCandidateNotComposing() {
-        val result = mode!!.getKeyPressResult(Key.STAR)
+        val result = mode!!.getKeyPressResult(Key.NEXT)
 
         assertEquals(true, result.consumed)
         //assertEquals(0, result.cursorPosition)
@@ -112,9 +111,9 @@ class WordInputModeTest {
         val candidates = listOf("call", "ball")
 
         val candidate1 = mode.resolveCodeWord("2255", candidates)
-        val result1 = mode.getKeyPressResult(Key.STAR)
+        val result1 = mode.getKeyPressResult(Key.NEXT)
         val candidate2 = mode.resolveCodeWord("2255", candidates)
-        mode.getKeyPressResult(Key.STAR)
+        mode.getKeyPressResult(Key.NEXT)
         val candidate3 = mode.resolveCodeWord("2255", candidates)
 
         // ASSERT

@@ -12,13 +12,13 @@ object KeyCodeMapping {
         14 to Key.N7,
         15 to Key.N8,
         16 to Key.N9,
-        17 to Key.STAR,
-        18 to Key.POUND,
-        4 to Key.BACK,
-        19 to Key.DPAD_UP,
-        20 to Key.DPAD_DOWN,
-        21 to Key.DPAD_LEFT,
-        22 to Key.DPAD_RIGHT,
-        66 to Key.DPAD_SELECT
+        17 to Key.NEXT,
+        18 to Key.SHIFT,
+        67 to Key.DELETE,
+        19 to Key.UP,
+        20 to Key.DOWN,
+        21 to Key.LEFT,
+        22 to Key.RIGHT,
+        66 to Key.SELECT
     )
 }
