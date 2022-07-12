@@ -63,14 +63,16 @@ class WordInputMode(
                 shiftMode()
             }
             else -> {
-                var isConsumed = false;
+                var isConsumed = false
+                val wordLength = codeWord.length
                 if (codeWord.isNotEmpty()) {
                     finishComposing()
-                    // Treat DPAD_RIGHT as consumed to allow pressing right to end composing but not
-                    // send it on as a keypress to move to the next input or something annoying.
-                    isConsumed = key == Key.RIGHT
+                    // Treat RIGHT or LEFT as consumed to allow pressing directions to end composing
+                    // but not send it on as a keypress to move to the next input or something
+                    // annoying.
+                    isConsumed = setOf(Key.RIGHT, Key.LEFT).contains(key)
                 }
-                state(isConsumed)
+                state(isConsumed, cursorOffset = if (key == Key.LEFT) -wordLength else 0)
             }
         }
     }
@@ -155,7 +157,8 @@ class WordInputMode(
         return state(consumed)
     }
 
-    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null): KeyPressResult {
+    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null,
+                        cursorOffset: Int = 0): KeyPressResult {
         var finalCodeWord: String? = codeWord
         if (finalCodeWord!!.isEmpty()) {
             finalCodeWord = this.codeWord.toString()
@@ -166,7 +169,8 @@ class WordInputMode(
         return KeyPressResult(
             consumed = consumed,
             codeWord = finalCodeWord,
-            word = word
+            word = word,
+            cursorOffset = cursorOffset
         )
     }
 

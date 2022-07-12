@@ -58,6 +58,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
+    // Whether we should end composing on the right side of the word.  May be false if we're
+    // moving the selection backwards.
+    private var rightSideOfWord = true
 
     // Trie for loading and searching for words by key
     private val t9Trie = T9Trie()
@@ -95,7 +98,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
-            Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
+            Log.d(LOG_TAG, "Result: $result")
+            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
@@ -192,23 +196,22 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             inputConnection?.getTextAfterCursor(25, 0)
         )
         if (result != null) {
-            if (!isComposing) {
-                if (oldSelStart < newSelStart) {
-                    inputConnection?.deleteSurroundingText(1, result.word!!.length - 1)
-                }
-                else {
-                    inputConnection?.deleteSurroundingText(result.word!!.length - 1, 1)
-                }
-                inputConnection?.setComposingText(result.word, 0)
-                isComposing = true
-                preloadTrie(result.codeWord!!, 2)
+            if (oldSelStart < newSelStart) {
+                Log.d(LOG_TAG, "Recomposing to the right.")
+                inputConnection?.deleteSurroundingText(1, result.word!!.length - 1)
             }
             else {
-                if (oldSelStart > newSelStart) {
-                    finishComposing()
-                    cursorPosition = oldSelStart - result.word!!.length
-                }
+                Log.d(LOG_TAG, "Recomposing to the left.")
+                inputConnection?.deleteSurroundingText(result.word!!.length - 1, 1)
             }
+            inputConnection?.setComposingText(result.word, 0)
+            isComposing = true
+            preloadTrie(result.codeWord!!, 2)
+        }
+        else {
+            Log.d(LOG_TAG, "Ending recompose.")
+            finishComposing()
+            cursorPosition = oldSelStart - result.word!!.length
         }
         super.onUpdateSelection(oldSelStart, oldSelEnd, cursorPosition, cursorPosition, candidatesStart, candidatesEnd)
     }
