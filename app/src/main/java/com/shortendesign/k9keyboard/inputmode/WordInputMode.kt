@@ -34,10 +34,11 @@ class WordInputMode(
         if (beforeMatches == null || afterMatches == null) {
             return null
         }
+        val afterText = afterMatches.groups[0]?.value
         val recomposingWord = beforeMatches.groups[0]?.value + afterMatches.groups[0]?.value
         codeWord.clear()
         codeWord.append(keypad.getCodeForWord(recomposingWord))
-        return state(word = recomposingWord)
+        return state(word = recomposingWord, cursorOffset = afterText?.length ?: 0)
     }
 
     override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {

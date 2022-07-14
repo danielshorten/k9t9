@@ -98,8 +98,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(keyCode)
-            Log.d(LOG_TAG, "Result: $result")
-            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
+            //Log.d(LOG_TAG, "Result: $result")
+            Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
@@ -163,14 +163,20 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // If we get nothing back, it's some unhandled action and we'll assume we should be
             // committing the current composition.
             else -> {
-                finishComposing()
+                // In some cases, after we finish composing, we may want to move the cursor, e.g.
+                // to the beginning of the word.
+                finishComposing(result.cursorOffset)
             }
         }
     }
 
-    private fun finishComposing() {
+    private fun finishComposing(cursorOffset: Int = 0) {
         if (isComposing) {
             inputConnection?.finishComposingText()
+            if (cursorOffset != 0) {
+                val selection = cursorPosition + cursorOffset
+                inputConnection?.setSelection(selection, selection)
+            }
             isComposing = false
         }
     }
@@ -190,30 +196,19 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
-        cursorPosition = newSelEnd
+        cursorPosition = newSelStart
         val result = mode?.recompose(
             inputConnection?.getTextBeforeCursor(25, 0),
             inputConnection?.getTextAfterCursor(25, 0)
         )
         if (result != null) {
-            if (oldSelStart < newSelStart) {
-                Log.d(LOG_TAG, "Recomposing to the right.")
-                inputConnection?.deleteSurroundingText(1, result.word!!.length - 1)
-            }
-            else {
-                Log.d(LOG_TAG, "Recomposing to the left.")
-                inputConnection?.deleteSurroundingText(result.word!!.length - 1, 1)
-            }
+            val deleteBefore = result.word!!.length - result.cursorOffset
+            inputConnection?.deleteSurroundingText(deleteBefore, result.cursorOffset)
             inputConnection?.setComposingText(result.word, 0)
             isComposing = true
-            preloadTrie(result.codeWord!!, 2)
+            preloadTrie(result.codeWord!!, 2, retryCandidates = true)
         }
-        else {
-            Log.d(LOG_TAG, "Ending recompose.")
-            finishComposing()
-            cursorPosition = oldSelStart - result.word!!.length
-        }
-        super.onUpdateSelection(oldSelStart, oldSelEnd, cursorPosition, cursorPosition, candidatesStart, candidatesEnd)
+        super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
 
     override fun onCreateCandidatesView(): View {
