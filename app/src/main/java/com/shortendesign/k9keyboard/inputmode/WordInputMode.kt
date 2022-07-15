@@ -41,12 +41,12 @@ class WordInputMode(
         return state(word = recomposingWord, cursorOffset = afterText?.length ?: 0)
     }
 
-    override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
+    override fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
-        return getKeyPressResult(key)
+        return getKeyPressResult(key, textBeforeCursor, textAfterCursor)
     }
 
-    fun getKeyPressResult(key: Key): KeyPressResult {
+    fun getKeyPressResult(key: Key, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
                 addSpace()
@@ -63,17 +63,14 @@ class WordInputMode(
             keypad.isShift(key) -> {
                 shiftMode()
             }
+            keypad.isDirection(key) -> {
+                navigate(key, textBeforeCursor, textAfterCursor)
+            }
             else -> {
-                var isConsumed = false
-                val wordLength = codeWord.length
                 if (codeWord.isNotEmpty()) {
                     finishComposing()
-                    // Treat RIGHT or LEFT as consumed to allow pressing directions to end composing
-                    // but not send it on as a keypress to move to the next input or something
-                    // annoying.
-                    isConsumed = setOf(Key.RIGHT, Key.LEFT).contains(key)
                 }
-                state(isConsumed, cursorOffset = if (key == Key.LEFT) -wordLength else 0)
+                state(false)
             }
         }
     }
@@ -158,8 +155,47 @@ class WordInputMode(
         return state(consumed)
     }
 
+    private fun navigate(key: Key, beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult {
+        if (codeWord.isEmpty()) {
+            var cursorOffset = 0
+            val beforeMatches =
+                if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
+            val afterMatches =
+                if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
+
+            cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
+                afterMatches.groups[0]?.value!!.length
+            } else if (key == Key.LEFT && beforeMatches != null) {
+                -beforeMatches.groups[0]?.value!!.length
+            } else {
+                return state(false)
+            }
+            val afterText = afterMatches?.groups?.get(0)?.value ?: ""
+            val recomposingWord = (beforeMatches?.groups?.get(0)?.value ?: "") + afterText
+            codeWord.clear()
+            codeWord.append(keypad.getCodeForWord(recomposingWord))
+            return state(
+                true,
+                word = recomposingWord,
+                recomposing = true,
+                cursorOffset = cursorOffset
+            )
+        }
+        else {
+            val codeWordLength = codeWord.length
+            finishComposing()
+            // Treat RIGHT or LEFT as consumed to allow pressing directions to end composing
+            // but not send it on as a keypress to move to the next input or something
+            // annoying.
+            return state(
+                consumed = setOf(Key.RIGHT, Key.LEFT).contains(key),
+                cursorOffset = if (key == Key.LEFT) -codeWordLength else 0
+            )
+        }
+    }
+
     private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null,
-                        cursorOffset: Int = 0): KeyPressResult {
+                      recomposing: Boolean = false, cursorOffset: Int = 0): KeyPressResult {
         var finalCodeWord: String? = codeWord
         if (finalCodeWord!!.isEmpty()) {
             finalCodeWord = this.codeWord.toString()
@@ -171,6 +207,7 @@ class WordInputMode(
             consumed = consumed,
             codeWord = finalCodeWord,
             word = word,
+            recomposing = recomposing,
             cursorOffset = cursorOffset
         )
     }

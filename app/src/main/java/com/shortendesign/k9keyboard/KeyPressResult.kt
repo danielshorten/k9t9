@@ -7,6 +7,8 @@ class KeyPressResult(
     val codeWord: String?,
     // Actual string to compose
     val word: String? = null,
+    // Whether the keypress began recomposing
+    val recomposing: Boolean = false,
     //
     val cursorOffset: Int = 0,
     // Delay before committing the word

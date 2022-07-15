@@ -11,7 +11,7 @@ class NumberInputMode (
     override val status: Status
         get() = Status.NUM
 
-    override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
+    override fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key)
     }

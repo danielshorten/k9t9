@@ -6,7 +6,7 @@ import com.shortendesign.k9keyboard.util.Status
 interface InputMode {
     val status: Status
 
-    fun getKeyCodeResult(keyCode: Int): KeyPressResult?
+    fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult?
 
     fun recompose(beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult?
 
