@@ -174,6 +174,7 @@ class WordInputMode(
             val recomposingWord = (beforeMatches?.groups?.get(0)?.value ?: "") + afterText
             codeWord.clear()
             codeWord.append(keypad.getCodeForWord(recomposingWord))
+            caseMask = getMaskFromWord(recomposingWord)
             return state(
                 true,
                 word = recomposingWord,
@@ -279,6 +280,14 @@ class WordInputMode(
                         else
                             mask
             }
+        }
+
+        fun getMaskFromWord(word: String): UInt {
+            var mask = 0u
+            word.forEachIndexed { idx, char ->
+                mask = registerMaskDigit(mask, idx, char.isUpperCase())
+            }
+            return mask
         }
 
         fun applyCaseMask(word: String, mask: UInt): String {

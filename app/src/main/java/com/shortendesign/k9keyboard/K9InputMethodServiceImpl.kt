@@ -90,7 +90,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 //    }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        Log.i(LOG_TAG, "keyCode: $keyCode")
+        //Log.i(LOG_TAG, "keyCode: $keyCode")
         var consumed = false
         val mode = this.mode
         if (mode != null) {
@@ -100,7 +100,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 inputConnection?.getTextAfterCursor(25, 0)
             )
             //Log.d(LOG_TAG, "Result: $result")
-            Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
+            //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
             updateStatusIcon(mode.status)
 
