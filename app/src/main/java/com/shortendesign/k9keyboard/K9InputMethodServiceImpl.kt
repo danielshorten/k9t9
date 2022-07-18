@@ -164,7 +164,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                     inputConnection?.setComposingText(result.word, 1)
                 }
                 // Attempt to resolve a word candidate from the mode's sequence of key presses
-                val candidate = resolveCodeWord(result.codeWord, 1)
+                val candidate = resolveCodeWord(
+                    result.codeWord,
+                    1,
+                    searchForWord = if (result.recomposing) result.word else null
+                )
                 // Ensure our T9 trie is primed with candidates for the current code word prefix
                 // (it gets cleared periodically to free up memory, so needs to be reprimed).
                 // This will also retry resolving the candidate if the above attempt returned null.
@@ -197,10 +201,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
     }
 
-    fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false): String? {
+    fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false,
+                        searchForWord: String? = null): String? {
         val candidates = t9Trie.getCandidates(codeWord, 7, codeWord.length)
         //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
-        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final)
+        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final, searchForWord)
         //Log.d(LOG_TAG, "Composing Text: $candidate - $cursorPosition")
         if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
         return candidate

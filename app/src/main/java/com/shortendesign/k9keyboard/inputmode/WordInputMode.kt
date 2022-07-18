@@ -147,13 +147,12 @@ class WordInputMode(
 
     private fun navigate(key: Key, beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult {
         if (codeWord.isEmpty()) {
-            var cursorOffset = 0
             val beforeMatches =
                 if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
             val afterMatches =
                 if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
 
-            cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
+            var cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
                 afterMatches.groups[0]?.value!!.length
             } else if (key == Key.LEFT && beforeMatches != null) {
                 -beforeMatches.groups[0]?.value!!.length
@@ -217,10 +216,22 @@ class WordInputMode(
         lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
     }
 
-    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
+    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
+                                 searchForWord: String?): String? {
         if (!candidates.isEmpty()) {
+            var candidateWord: String? = null
+            if (searchForWord != null) {
+                candidates.forEachIndexed { idx, candidate ->
+                    if (candidate.equals(searchForWord)) {
+                        candidateWord = candidate
+                        candidateIdx = idx
+                    }
+                }
+            }
+
             // Get the candidate at the correct index, based on which one we've chosen
-            var candidateWord = when {
+            candidateWord = when {
+                candidateWord != null -> candidateWord
                 candidateIdx < candidates.count() -> candidates[candidateIdx]
                 candidateIdx >= candidates.count() -> candidates[0]
                 else -> null
@@ -236,14 +247,14 @@ class WordInputMode(
             this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
             // Truncate the word if it's longer than the actual number of keys that have been
             // pressed.
-            if (candidateWord.length > codeWord.length) {
-                candidateWord = candidateWord.substring(0, codeWord.length)
+            if (candidateWord!!.length > codeWord.length) {
+                candidateWord = candidateWord!!.substring(0, codeWord.length)
             }
 
-            candidateWord = applyCaseMask(candidateWord, caseMask)
+            candidateWord = applyCaseMask(candidateWord!!, caseMask)
 
             lastResolvedCodeWord = codeWord
-            checkForPeriod(candidateWord)
+            checkForPeriod(candidateWord!!)
             return candidateWord
         }
         // If this was the final chance to resolve the code word, and we couldn't, reset to the last

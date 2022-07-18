@@ -16,7 +16,8 @@ class NumberInputMode (
         return getKeyPressResult(key)
     }
 
-    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
+    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
+                                 searchForWord: String?): String? {
         throw NotImplementedError("This mode does not resolve code words")
     }
 
