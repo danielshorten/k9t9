@@ -16,10 +16,6 @@ class NumberInputMode (
         return getKeyPressResult(key)
     }
 
-    override fun recompose(beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult? {
-        return null
-    }
-
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
         throw NotImplementedError("This mode does not resolve code words")
     }

@@ -27,26 +27,16 @@ class WordInputMode(
     private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
 
-    override fun recompose(beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult? {
-
-        val beforeMatches = if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
-        val afterMatches = if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
-        if (beforeMatches == null || afterMatches == null) {
-            return null
-        }
-        val afterText = afterMatches.groups[0]?.value
-        val recomposingWord = beforeMatches.groups[0]?.value + afterMatches.groups[0]?.value
-        codeWord.clear()
-        codeWord.append(keypad.getCodeForWord(recomposingWord))
-        return state(word = recomposingWord, cursorOffset = afterText?.length ?: 0)
-    }
-
+    /**
+     *
+     */
     override fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key, textBeforeCursor, textAfterCursor)
     }
 
-    fun getKeyPressResult(key: Key, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+    fun getKeyPressResult(key: Key, textBeforeCursor: CharSequence? = null,
+                          textAfterCursor: CharSequence? = null): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
                 addSpace()

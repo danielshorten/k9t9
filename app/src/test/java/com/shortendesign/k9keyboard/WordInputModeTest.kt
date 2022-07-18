@@ -221,39 +221,51 @@ class WordInputModeTest {
     }
 
     @Test
-    fun testShouldRecomposeWordEndOfWord() {
-        val word = mode?.recompose(
+    fun testNavigateLeftEndOfWord() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
             "This is the text before the cursor",
             ". And this is the text after the cursor."
         )
 
+        assertTrue(
+            "Navigating left at the end of a word should start recomposing",
+            result!!.recomposing)
         assertEquals(
-            "Cursor is after the word 'cursor', so we shouldn't recompose",
-            null, word)
+            "The recomposing word should be correct",
+            result.word, "cursor")
     }
 
     @Test
-    fun testShouldRecomposeWordMiddleOfWord() {
-        val word = mode?.recompose(
+    fun testNavigateLeftMiddleOfWord() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
             "This is the text bef",
             "ore the cursor. And this is the text after the cursor."
         )
 
+        assertTrue(
+            "Navigating left in the middle of a word should start recomposing",
+            result!!.recomposing)
         assertEquals(
-            "Cursor is in the middle of the word 'before', so we should recompose that word",
-            "before", word)
+            "The recomposing word should be correct",
+            result.word, "before")
     }
 
     @Test
-    fun testShouldRecomposeWordBetweenWords() {
-        val word = mode?.recompose(
+    fun testNavigateLeftBetweenWords() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
             "This is the text before the cursor.",
             " And this is the text after the cursor."
         )
 
+        assertFalse(
+            "Navigating left between words shouldn't trigger recomposing",
+            result!!.recomposing)
         assertEquals(
-            "Cursor is between a period and a space - shouldn't recompose",
-            null, word)
+            "There shouldn't be a recomposing word",
+            result.word, null)
     }
 
 }

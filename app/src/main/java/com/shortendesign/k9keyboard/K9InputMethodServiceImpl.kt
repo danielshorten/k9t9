@@ -148,12 +148,17 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // Handle the case where the input mode returns a code word to be resolved.
             result.codeWord != null -> {
                 isComposing = true
+                // Handle recomposing
                 if (result.recomposing) {
+                    // Calculate the new cursor position base on cursor offset
                     val newSel = cursorPosition + result.cursorOffset
                     inputConnection?.setSelection(newSel, newSel)
+                    // If we moved the cursor right, we'll delete the text to the left.
                     val deleteLeft = result.cursorOffset > 0
                     inputConnection?.deleteSurroundingText(
+                        // Delete the characters before the cursor if we're deleting left
                         if (deleteLeft) result.codeWord.length else 0,
+                        // Otherwise delete the characters after the cursor (right)
                         if (deleteLeft) 0 else result.codeWord.length,
                     )
                     inputConnection?.setComposingText(result.word, 1)
@@ -208,17 +213,6 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
                                    newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         cursorPosition = newSelStart
-//        val result = mode?.recompose(
-//            inputConnection?.getTextBeforeCursor(25, 0),
-//            inputConnection?.getTextAfterCursor(25, 0)
-//        )
-//        if (result != null) {
-//            val deleteBefore = result.word!!.length - result.cursorOffset
-//            inputConnection?.deleteSurroundingText(deleteBefore, result.cursorOffset)
-//            inputConnection?.setComposingText(result.word, 0)
-//            isComposing = true
-//            preloadTrie(result.codeWord!!, 2, retryCandidates = true)
-//        }
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
     }
 
