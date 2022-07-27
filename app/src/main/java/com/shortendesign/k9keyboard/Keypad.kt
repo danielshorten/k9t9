@@ -1,6 +1,7 @@
 package com.shortendesign.k9keyboard
 
 import com.shortendesign.k9keyboard.util.Key
+import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
 import com.shortendesign.k9keyboard.util.MissingLetterCode
 import java.lang.StringBuilder
@@ -10,7 +11,7 @@ import java.lang.StringBuilder
  */
 class Keypad(
     // Map from Android keyCode to the Key that should be activated
-    private val keyCodeMapping: Map<Int, Key>,
+    private val keyCodeMapping: KeyCodeMapping,
     // Map from keyboard Key to the letters/symbols associated with that key
     private val letterLayout: Map<Key, List<Char>>
 ) {
@@ -27,7 +28,7 @@ class Keypad(
      * Resolve Android keycode to our internal Key enum value
      */
     fun getKey(keyCode: Int): Key? {
-        return keyCodeMapping[keyCode]
+        return keyCodeMapping.key(keyCode)
     }
 
     /**

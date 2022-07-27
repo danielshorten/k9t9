@@ -18,14 +18,14 @@ import com.shortendesign.k9keyboard.inputmode.NumberInputMode
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
-import com.shortendesign.k9keyboard.util.KeyCodeMapping
-import com.shortendesign.k9keyboard.util.LetterLayout
-import com.shortendesign.k9keyboard.util.MissingLetterCode
-import com.shortendesign.k9keyboard.util.Status
+import com.shortendesign.k9keyboard.util.*
 import kotlinx.coroutines.*
 import java.io.File
-import java.io.FileWriter
+import java.io.FileInputStream
+import java.io.IOException
+import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
+import kotlin.collections.ArrayList
 
 
 class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
@@ -38,7 +38,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     // Current status for the input mode (e.g. capitalized word, all-caps letters)
     private var modeStatus: Status? = null
     // Keypad class to handle key/character mapping
-    private val keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+    private lateinit var keypad: Keypad
 
     private lateinit var db: AppDatabase
     private lateinit var wordDao: WordDao
@@ -69,6 +69,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         db = AppDatabase.getInstance(this)
         wordDao = db.getWordDao()
         settingDao = db.getSettingDao()
+        keypad = loadKeyPad()
         initializeWordsFirstTime()
         //writeToFile()
     }
@@ -386,6 +387,25 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 }
             }
         }
+    }
+
+    private fun loadKeyPad(): Keypad {
+        var keyCodeMapping: KeyCodeMapping?
+        try {
+            val dir = applicationContext.getExternalFilesDir(null)
+            if (dir?.exists() == false) {
+                dir.mkdir()
+            }
+            FileInputStream(File(dir, "k9t9.properties")).use { input ->
+                val props = Properties()
+                props.load(input)
+                keyCodeMapping = KeyCodeMapping.fromProperties(props)
+            }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            keyCodeMapping = KeyCodeMapping(KeyCodeMapping.basic)
+        }
+        return Keypad(keyCodeMapping!!, LetterLayout.enUS)
     }
 
     /***************************** HELPERS ****************************************/

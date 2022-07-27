@@ -15,7 +15,7 @@ class WordInputModeTest {
     @Before
     fun setup() {
         mode = WordInputMode(
-            keypad = Keypad(KeyCodeMapping.basic, LetterLayout.enUS)
+            keypad = Keypad(KeyCodeMapping(KeyCodeMapping.basic), LetterLayout.enUS)
         )
     }
 

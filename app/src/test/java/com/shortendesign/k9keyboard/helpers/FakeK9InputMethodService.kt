@@ -15,11 +15,6 @@ class FakeK9InputMethodService: K9InputMethodService {
         return candidates!!
     }
 
-    override fun setComposingText(text: String, cursorPosition: Int) {
-        this.composingText = text
-        this.cursorPosition = cursorPosition
-    }
-
     override fun commitText(text: String, cursorPosition: Int) {
         this.text = text
         this.cursorPosition = cursorPosition
