@@ -14,3 +14,10 @@ T9 keyboard for Android
 - No settings UI
 - Hard-coded key behaviour (may not work with your phone)
 - Dictionary is preset—no support for adding or editing words
+
+**Override Settings**
+Make a copy of `k9t9.properties-example`.  Update settings, such as key code mappings.
+
+```
+adb push k9t9.properties /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files/k9t9.properties
+```

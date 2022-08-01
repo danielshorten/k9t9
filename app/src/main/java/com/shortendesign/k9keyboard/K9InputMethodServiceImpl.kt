@@ -18,14 +18,16 @@ import com.shortendesign.k9keyboard.inputmode.NumberInputMode
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
-import com.shortendesign.k9keyboard.util.*
+import com.shortendesign.k9keyboard.util.KeyCodeMapping
+import com.shortendesign.k9keyboard.util.LetterLayout
+import com.shortendesign.k9keyboard.util.MissingLetterCode
+import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
-import kotlin.collections.ArrayList
 
 
 class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
@@ -71,26 +73,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         settingDao = db.getSettingDao()
         keypad = loadKeyPad()
         initializeWordsFirstTime()
-        //writeToFile()
     }
-
-//    fun writeToFile() {
-//        val dir = applicationContext.getExternalFilesDir(null)
-//        if (dir?.exists() == false) {
-//            dir.mkdir()
-//        }
-//
-//        try {
-//            val gpxfile = File(dir, "k9test.txt")
-//            val writer = FileWriter(gpxfile)
-//            writer.append("My test content.")
-//            writer.flush()
-//            writer.close()
-//            Log.d(LOG_TAG, "Wrote to file $gpxfile")
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//    }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(LOG_TAG, "keyCode: $keyCode")
