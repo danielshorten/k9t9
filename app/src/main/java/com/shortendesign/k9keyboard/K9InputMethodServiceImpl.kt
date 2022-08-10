@@ -25,6 +25,7 @@ import com.shortendesign.k9keyboard.util.Status
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
@@ -384,7 +385,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 props.load(input)
                 keyCodeMapping = KeyCodeMapping.fromProperties(props)
             }
-        } catch (ex: IOException) {
+        } catch (ex: FileNotFoundException) {
+            Log.d(LOG_TAG, "No custom settings file found. Using default settings.")
+            keyCodeMapping = KeyCodeMapping(KeyCodeMapping.basic)
+        }
+        catch (ex: IOException) {
             ex.printStackTrace()
             keyCodeMapping = KeyCodeMapping(KeyCodeMapping.basic)
         }
