@@ -16,8 +16,13 @@ T9 keyboard for Android
 - Dictionary is preset—no support for adding or editing words
 
 **Override Settings**
-Make a copy of `k9t9.properties-example`.  Update settings, such as key code mappings.
-
+1. Save a copy of `k9t9.properties-example`.
 ```
-adb push k9t9.properties /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files/k9t9.properties
+cp k9t9.properties-example ~/k9t9.properties
+```
+
+2. Update settings, such as key code mappings.
+3. Copy the updated settings file to your device using `adb`
+```
+adb push ~/k9t9.properties /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files/k9t9.properties
 ```
