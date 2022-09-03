@@ -49,7 +49,11 @@ open class Node (
             if (curChar == key.length) {
                 return node
             }
-            val idx = valueMap[key[curChar]]!!
+            val idx = valueMap[key[curChar]]
+            if (idx == null) {
+                Log.e(LOG_TAG, "Error mapping code ${key[curChar]} to a trie index")
+                return null
+            }
             if (node.children[idx] != null) {
                 return search(node.children[idx]!!, key, curChar + 1)
             }

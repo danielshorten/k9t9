@@ -3,7 +3,7 @@ package com.shortendesign.k9keyboard.util
 object LetterLayout {
     val enUS = mapOf(
         Key.N0 to listOf('0'),
-        Key.N1 to listOf('1', '\'','.','?','!',',','-','@','$',':','(',')'),
+        Key.N1 to listOf('1', '\'','.','?','!',',','-','@','$','/','%',':','(',')'),
         Key.N2 to listOf('2', 'a','b','c'),
         Key.N3 to listOf('3', 'd','e','é','f'),
         Key.N4 to listOf('4', 'g','h','i'),
@@ -16,5 +16,6 @@ object LetterLayout {
         Key.SHIFT to listOf('#'),
     )
 
-    val nonAlphaNumeric = setOf('*','#','\'','.','?','!',',','-','@','$',':','(',')')
+    // FIXME: Don't duplicate this list
+    val nonAlphaNumeric = setOf('*','#','\'','.','?','!',',','-','@','$','/','%',':','(',')')
 }

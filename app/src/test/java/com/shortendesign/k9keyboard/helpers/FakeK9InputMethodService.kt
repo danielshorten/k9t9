@@ -2,7 +2,6 @@ package com.shortendesign.k9keyboard.helpers
 
 import com.shortendesign.k9keyboard.K9InputMethodService
 import com.shortendesign.k9keyboard.entity.Word
-import java.util.*
 
 
 class FakeK9InputMethodService: K9InputMethodService {

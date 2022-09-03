@@ -75,6 +75,11 @@ class Keypad(
         return key == Key.N0
     }
 
+    // Is this a directional key?
+    fun isDirection(key: Key): Boolean {
+        return setOf(Key.LEFT, Key.RIGHT, Key.UP, Key.DOWN).contains(key)
+    }
+
     /**
      * Get the series of key character values required to represent a word
      */
