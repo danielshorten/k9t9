@@ -9,5 +9,5 @@ interface InputMode {
     fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult?
 
     fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean = false,
-                        searchForWord: String? = null): String?
+                        resetToWord: String? = null): String?
 }

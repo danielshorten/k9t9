@@ -17,7 +17,7 @@ class NumberInputMode (
     }
 
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
-                                 searchForWord: String?): String? {
+                                 resetToWord: String?): String? {
         throw NotImplementedError("This mode does not resolve code words")
     }
 

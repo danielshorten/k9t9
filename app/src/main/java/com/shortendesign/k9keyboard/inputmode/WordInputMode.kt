@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard.inputmode
 
+import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Key
@@ -14,8 +15,6 @@ class WordInputMode(
     private var caseMask: UInt = 0u
     // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
-    // Specific word to set as candidate (recomposing)
-    private val candidateWord: String? = null
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
     private var lastWordWasPeriod = false
@@ -152,7 +151,7 @@ class WordInputMode(
             val afterMatches =
                 if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
 
-            var cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
+            val cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
                 afterMatches.groups[0]?.value!!.length
             } else if (key == Key.LEFT && beforeMatches != null) {
                 -beforeMatches.groups[0]?.value!!.length
@@ -216,13 +215,24 @@ class WordInputMode(
         lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
     }
 
+    /**
+     * Resolve a code word to an actual word, using the available information
+     *
+     * codeWord: the code word to resolve
+     * candidates: list of words that resolve to the codeword
+     * final: this is the second & final chance to resolve the code word
+     * searchForWord: we are resetting to a previously-written word, so attempt to reset state to
+     *                a particular word.
+     * deleting: support deleting as a special case where we don't reset to a previously-resolved
+     *           codeword if the codeword doesn't resolve to a word
+     */
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
-                                 searchForWord: String?): String? {
+                                 resetToWord: String?): String? {
         if (!candidates.isEmpty()) {
             var candidateWord: String? = null
-            if (searchForWord != null) {
+            if (resetToWord != null) {
                 candidates.forEachIndexed { idx, candidate ->
-                    if (candidate.equals(searchForWord)) {
+                    if (candidate.equals(resetToWord)) {
                         candidateWord = candidate
                         candidateIdx = idx
                     }
@@ -244,7 +254,7 @@ class WordInputMode(
             // Replace the code word with the one we're resolving.
             // This handles the case where we've recorded a bunch of key presses but haven't been
             // able to resolve them to any actual word.  We keep the codeWord for the ones we found.
-            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
+            this.replaceCodeWord(codeWord)
             // Truncate the word if it's longer than the actual number of keys that have been
             // pressed.
             if (candidateWord!!.length > codeWord.length) {
@@ -254,15 +264,26 @@ class WordInputMode(
             candidateWord = applyCaseMask(candidateWord!!, caseMask)
 
             lastResolvedCodeWord = codeWord
+            //Log.d(LOG_TAG, "LAST RESOLVED CODE WORD: ${lastResolvedCodeWord}")
             checkForPeriod(candidateWord!!)
-            return candidateWord
+            return resetToWord ?: candidateWord
         }
-        // If this was the final chance to resolve the code word, and we couldn't, reset to the last
-        // resolved code word.
+        else if (resetToWord != null) {
+            // If we're resetting to a previously composed word, force the codeword
+            this.replaceCodeWord(this.keypad.getCodeForWord(resetToWord))
+            lastResolvedCodeWord = codeWord
+        }
+        // If this was the final chance to resolve the code word, and we couldn't...reset to the last
+        // resolved code word.  Don't do this if we're deleting so the delete actually works.
         if (final && lastResolvedCodeWord != null) {
-            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), lastResolvedCodeWord!!)
+//            Log.d(LOG_TAG, "FINALLY REPLACING WITH: ${lastResolvedCodeWord}")
+            this.replaceCodeWord(lastResolvedCodeWord!!)
         }
         return null
+    }
+
+    private fun replaceCodeWord(codeWord: String) {
+        this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
     }
 
     companion object {

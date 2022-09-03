@@ -55,6 +55,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     // Keep track of if we're composing - we use this to help know when to commit a finished word
     private var isComposing = false
+    private var lastComposingText: String? = null
 
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
@@ -148,31 +149,14 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // Handle the case where the input mode returns a code word to be resolved.
             result.codeWord != null -> {
                 isComposing = true
-                // Handle recomposing
                 if (result.recomposing) {
-                    // Calculate the new cursor position base on cursor offset
-                    val newSel = cursorPosition + result.cursorOffset
-                    inputConnection?.setSelection(newSel, newSel)
-                    // If we moved the cursor right, we'll delete the text to the left.
-                    val deleteLeft = result.cursorOffset > 0
-                    inputConnection?.deleteSurroundingText(
-                        // Delete the characters before the cursor if we're deleting left
-                        if (deleteLeft) result.codeWord.length else 0,
-                        // Otherwise delete the characters after the cursor (right)
-                        if (deleteLeft) 0 else result.codeWord.length,
-                    )
-                    inputConnection?.setComposingText(result.word, 1)
+                    handleRecomposing(result)
                 }
                 // Attempt to resolve a word candidate from the mode's sequence of key presses
-                val candidate = resolveCodeWord(
+                resolveCodeWord(
                     result.codeWord,
-                    1,
-                    searchForWord = if (result.recomposing) result.word else null
+                    recomposingResult = if (result.recomposing) result else null
                 )
-                // Ensure our T9 trie is primed with candidates for the current code word prefix
-                // (it gets cleared periodically to free up memory, so needs to be reprimed).
-                // This will also retry resolving the candidate if the above attempt returned null.
-                preloadTrie(result.codeWord, 2, retryCandidates = candidate == null)
             }
             // Handle the case where the input mode returns a literal word to be added to the input
             result.word != null -> {
@@ -190,6 +174,26 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
     }
 
+    private fun handleRecomposing(result: KeyPressResult) {
+        val newSel = cursorPosition + result.cursorOffset
+        // Calculate the new cursor position base on cursor offset
+        inputConnection?.setSelection(newSel, newSel)
+        // If we moved the cursor right, we'll delete the text to the left.
+        val deleteLeft = result.cursorOffset > 0
+        inputConnection?.deleteSurroundingText(
+            // Delete the characters before the cursor if we're deleting left
+            if (deleteLeft) result.codeWord!!.length else 0,
+            // Otherwise delete the characters after the cursor (right)
+            if (deleteLeft) 0 else result.codeWord!!.length,
+        )
+        setComposingText(result.word!!)
+    }
+
+    private fun setComposingText(composingText: String) {
+        lastComposingText = composingText
+        inputConnection?.setComposingText(composingText, 1)
+    }
+
     private fun finishComposing(cursorOffset: Int = 0) {
         if (isComposing) {
             inputConnection?.finishComposingText()
@@ -201,14 +205,45 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
     }
 
-    fun resolveCodeWord(codeWord: String, cursorPosition: Int, final: Boolean = false,
-                        searchForWord: String? = null): String? {
+    fun resolveCodeWord(codeWord: String, final: Boolean = false,
+                        recomposingResult: KeyPressResult? = null) {
         val candidates = t9Trie.getCandidates(codeWord, 7, codeWord.length)
-        //Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
-        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final, searchForWord)
-        //Log.d(LOG_TAG, "Composing Text: $candidate - $cursorPosition")
-        if (candidate != null) inputConnection?.setComposingText(candidate, cursorPosition)
-        return candidate
+//        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
+        // Special case: if the new codeword is one character shorter than the last-seen composing
+        // text, assume we're deleting
+        val composingText = lastComposingText
+        val deleteResult = if (composingText?.length?.minus(codeWord.length) == 1)
+            composingText.substring(0, composingText.length - 1)
+            else null
+        val resetToWord = when {
+            // If we're beginning to recompose, reset to the initial word
+            recomposingResult != null -> recomposingResult.word
+            // If we're deleting, force the last text with one character truncated
+            deleteResult != null -> deleteResult
+            else -> null
+        }
+        val candidate = mode!!.resolveCodeWord(codeWord, candidates, final, resetToWord)
+//        Log.d(LOG_TAG, "CANDIDATE: $candidate")
+
+        // Initial pass
+        if (!final) {
+            // Ensure our T9 trie is primed with candidates for the current code word prefix
+            // (it gets cleared periodically to free up memory, so needs to be reprimed).
+            // This will also retry resolving the candidate if the above attempt returned null.
+            preloadTrie(
+                codeWord, 2,
+                retryCandidates = candidate == null,
+                recomposingResult = recomposingResult
+            )
+        }
+        if (deleteResult != null) {
+            setComposingText(deleteResult)
+        }
+        // If we can resolve a candidate, set the composing text
+        // (except if we're beginning to recompose)
+        else if (candidate != null && recomposingResult == null) {
+            setComposingText(candidate)
+        }
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
@@ -263,11 +298,6 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     override suspend fun findCandidates(word: String): List<Word> {
         return wordDao.findCandidates(word)
     }
-
-//    override fun setComposingText(text: String, cursorPosition: Int) {
-//        supe
-//        inputConnection?.setComposingText(text, cursorPosition)
-//    }
 
     override fun commitText(text: String, cursorPosition: Int) {
         inputConnection?.commitText(text, cursorPosition)
@@ -329,11 +359,13 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
     }
 
-    private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false) {
+    private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false,
+                            recomposingResult: KeyPressResult? = null) {
         // Only start a preload job if there isn't one active
         if (preloadJob == null || !preloadJob!!.isActive) {
             preloadJob = scope.launch {
-                doPreloadTrie(key, minKeyLength, 200, retryCandidates = retryCandidates)
+                doPreloadTrie(key, minKeyLength, 200, retryCandidates = retryCandidates,
+                recomposingResult=recomposingResult)
             }
         } else {
             // If there's a job active but we wanted to retry, store that info
@@ -345,15 +377,17 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         key: String,
         minKeyLength: Int = 0,
         numCandidates: Int = 200,
-        retryCandidates: Boolean = false
+        retryCandidates: Boolean = false,
+        recomposingResult: KeyPressResult? = null
     ) {
+        var skipLoad = false
         // Only preload if the key length meets the minimum threshold
         if (minKeyLength > 0 && key.length < minKeyLength) {
-            return
+            skipLoad = true
         }
         // If we've preloaded for this key recently, skip
         if (lastNPreloads.contains(key)) {
-            return
+            skipLoad = true
         }
         else {
             if (lastNPreloads.size == preloadsToCache) {
@@ -361,13 +395,16 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             }
             lastNPreloads.add(key)
         }
-        val words = wordDao.findCandidates(key, numCandidates)
-        for (word in words) {
-            //Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
-            t9Trie.add(word.code, word.word, word.frequency)
+        if (!skipLoad) {
+            val words = wordDao.findCandidates(key, numCandidates)
+            for (word in words) {
+                //Log.d(LOG_TAG, "Preload trie ${word.code} => ${word.word}: ${word.frequency}")
+                t9Trie.add(word.code, word.word, word.frequency)
+            }
         }
         if (retryCandidates || retryCodeWordAfterPreload != null) {
-            resolveCodeWord(retryCodeWordAfterPreload?: key, 1, true)
+//            Log.d(LOG_TAG, "Retrying resolveCodeWord")
+            resolveCodeWord(retryCodeWordAfterPreload?: key, true, recomposingResult)
         }
         retryCodeWordAfterPreload = null
         //t9Trie.prune(key, depth = 3)
