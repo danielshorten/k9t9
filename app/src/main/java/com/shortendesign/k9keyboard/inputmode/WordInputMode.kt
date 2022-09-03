@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard.inputmode
 
+import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Key
@@ -12,6 +13,7 @@ class WordInputMode(
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
     private var caseMask: UInt = 0u
+    // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
@@ -21,12 +23,19 @@ class WordInputMode(
     override val status: Status
         get() = this.currentStatus
 
-    override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
+    private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
+    private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
+
+    /**
+     *
+     */
+    override fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
-        return getKeyPressResult(key)
+        return getKeyPressResult(key, textBeforeCursor, textAfterCursor)
     }
 
-    fun getKeyPressResult(key: Key): KeyPressResult {
+    fun getKeyPressResult(key: Key, textBeforeCursor: CharSequence? = null,
+                          textAfterCursor: CharSequence? = null): KeyPressResult {
         return when {
             keypad.isSpace(key) -> {
                 addSpace()
@@ -43,15 +52,14 @@ class WordInputMode(
             keypad.isShift(key) -> {
                 shiftMode()
             }
+            keypad.isDirection(key) -> {
+                navigate(key, textBeforeCursor, textAfterCursor)
+            }
             else -> {
-                var isConsumed = false;
                 if (codeWord.isNotEmpty()) {
                     finishComposing()
-                    // Treat DPAD_RIGH1T as consumed to allow pressing right to end composing but not
-                    // send it on as a keypress to move to the next input or something annoying.
-                    isConsumed = key == Key.RIGHT
                 }
-                state(isConsumed)
+                state(false)
             }
         }
     }
@@ -136,7 +144,47 @@ class WordInputMode(
         return state(consumed)
     }
 
-    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null): KeyPressResult {
+    private fun navigate(key: Key, beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult {
+        if (codeWord.isEmpty()) {
+            val beforeMatches =
+                if (beforeCursor != null) shouldRecomposeBeforeRegex.find(beforeCursor) else null
+            val afterMatches =
+                if (afterCursor != null) shouldRecomposeAfterRegex.find(afterCursor) else null
+
+            val cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
+                afterMatches.groups[0]?.value!!.length
+            } else if (key == Key.LEFT && beforeMatches != null) {
+                -beforeMatches.groups[0]?.value!!.length
+            } else {
+                return state(false)
+            }
+            val afterText = afterMatches?.groups?.get(0)?.value ?: ""
+            val recomposingWord = (beforeMatches?.groups?.get(0)?.value ?: "") + afterText
+            codeWord.clear()
+            codeWord.append(keypad.getCodeForWord(recomposingWord))
+            caseMask = getMaskFromWord(recomposingWord)
+            return state(
+                true,
+                word = recomposingWord,
+                recomposing = true,
+                cursorOffset = cursorOffset
+            )
+        }
+        else {
+            val codeWordLength = codeWord.length
+            finishComposing()
+            // Treat RIGHT or LEFT as consumed to allow pressing directions to end composing
+            // but not send it on as a keypress to move to the next input or something
+            // annoying.
+            return state(
+                consumed = setOf(Key.RIGHT, Key.LEFT).contains(key),
+                cursorOffset = if (key == Key.LEFT) -codeWordLength else 0
+            )
+        }
+    }
+
+    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null,
+                      recomposing: Boolean = false, cursorOffset: Int = 0): KeyPressResult {
         var finalCodeWord: String? = codeWord
         if (finalCodeWord!!.isEmpty()) {
             finalCodeWord = this.codeWord.toString()
@@ -147,7 +195,9 @@ class WordInputMode(
         return KeyPressResult(
             consumed = consumed,
             codeWord = finalCodeWord,
-            word = word
+            word = word,
+            recomposing = recomposing,
+            cursorOffset = cursorOffset
         )
     }
 
@@ -165,10 +215,33 @@ class WordInputMode(
         lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
     }
 
-    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
+    /**
+     * Resolve a code word to an actual word, using the available information
+     *
+     * codeWord: the code word to resolve
+     * candidates: list of words that resolve to the codeword
+     * final: this is the second & final chance to resolve the code word
+     * searchForWord: we are resetting to a previously-written word, so attempt to reset state to
+     *                a particular word.
+     * deleting: support deleting as a special case where we don't reset to a previously-resolved
+     *           codeword if the codeword doesn't resolve to a word
+     */
+    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
+                                 resetToWord: String?): String? {
         if (!candidates.isEmpty()) {
+            var candidateWord: String? = null
+            if (resetToWord != null) {
+                candidates.forEachIndexed { idx, candidate ->
+                    if (candidate.equals(resetToWord)) {
+                        candidateWord = candidate
+                        candidateIdx = idx
+                    }
+                }
+            }
+
             // Get the candidate at the correct index, based on which one we've chosen
-            var candidateWord = when {
+            candidateWord = when {
+                candidateWord != null -> candidateWord
                 candidateIdx < candidates.count() -> candidates[candidateIdx]
                 candidateIdx >= candidates.count() -> candidates[0]
                 else -> null
@@ -181,25 +254,36 @@ class WordInputMode(
             // Replace the code word with the one we're resolving.
             // This handles the case where we've recorded a bunch of key presses but haven't been
             // able to resolve them to any actual word.  We keep the codeWord for the ones we found.
-            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
+            this.replaceCodeWord(codeWord)
             // Truncate the word if it's longer than the actual number of keys that have been
             // pressed.
-            if (candidateWord.length > codeWord.length) {
-                candidateWord = candidateWord.substring(0, codeWord.length)
+            if (candidateWord!!.length > codeWord.length) {
+                candidateWord = candidateWord!!.substring(0, codeWord.length)
             }
 
-            candidateWord = applyCaseMask(candidateWord, caseMask)
+            candidateWord = applyCaseMask(candidateWord!!, caseMask)
 
             lastResolvedCodeWord = codeWord
-            checkForPeriod(candidateWord)
-            return candidateWord
+            //Log.d(LOG_TAG, "LAST RESOLVED CODE WORD: ${lastResolvedCodeWord}")
+            checkForPeriod(candidateWord!!)
+            return resetToWord ?: candidateWord
         }
-        // If this was the final chance to resolve the code word, and we couldn't, reset to the last
-        // resolved code word.
+        else if (resetToWord != null) {
+            // If we're resetting to a previously composed word, force the codeword
+            this.replaceCodeWord(this.keypad.getCodeForWord(resetToWord))
+            lastResolvedCodeWord = codeWord
+        }
+        // If this was the final chance to resolve the code word, and we couldn't...reset to the last
+        // resolved code word.  Don't do this if we're deleting so the delete actually works.
         if (final && lastResolvedCodeWord != null) {
-            this.codeWord.replace(0, maxOf(this.codeWord.length, 0), lastResolvedCodeWord!!)
+//            Log.d(LOG_TAG, "FINALLY REPLACING WITH: ${lastResolvedCodeWord}")
+            this.replaceCodeWord(lastResolvedCodeWord!!)
         }
         return null
+    }
+
+    private fun replaceCodeWord(codeWord: String) {
+        this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
     }
 
     companion object {
@@ -218,6 +302,14 @@ class WordInputMode(
                         else
                             mask
             }
+        }
+
+        fun getMaskFromWord(word: String): UInt {
+            var mask = 0u
+            word.forEachIndexed { idx, char ->
+                mask = registerMaskDigit(mask, idx, char.isUpperCase())
+            }
+            return mask
         }
 
         fun applyCaseMask(word: String, mask: UInt): String {

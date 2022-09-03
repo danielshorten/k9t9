@@ -220,4 +220,52 @@ class WordInputModeTest {
         assertEquals("1000", Integer.toBinaryString(mask1.toInt()))
     }
 
+    @Test
+    fun testNavigateLeftEndOfWord() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
+            "This is the text before the cursor",
+            ". And this is the text after the cursor."
+        )
+
+        assertTrue(
+            "Navigating left at the end of a word should start recomposing",
+            result!!.recomposing)
+        assertEquals(
+            "The recomposing word should be correct",
+            result.word, "cursor")
+    }
+
+    @Test
+    fun testNavigateLeftMiddleOfWord() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
+            "This is the text bef",
+            "ore the cursor. And this is the text after the cursor."
+        )
+
+        assertTrue(
+            "Navigating left in the middle of a word should start recomposing",
+            result!!.recomposing)
+        assertEquals(
+            "The recomposing word should be correct",
+            result.word, "before")
+    }
+
+    @Test
+    fun testNavigateLeftBetweenWords() {
+        val result = mode?.getKeyPressResult(
+            Key.LEFT,
+            "This is the text before the cursor.",
+            " And this is the text after the cursor."
+        )
+
+        assertFalse(
+            "Navigating left between words shouldn't trigger recomposing",
+            result!!.recomposing)
+        assertEquals(
+            "There shouldn't be a recomposing word",
+            result.word, null)
+    }
+
 }

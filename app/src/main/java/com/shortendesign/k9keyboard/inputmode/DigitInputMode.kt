@@ -11,12 +11,13 @@ class NumberInputMode (
     override val status: Status
         get() = Status.NUM
 
-    override fun getKeyCodeResult(keyCode: Int): KeyPressResult? {
+    override fun getKeyCodeResult(keyCode: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
         return getKeyPressResult(key)
     }
 
-    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean): String? {
+    override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
+                                 resetToWord: String?): String? {
         throw NotImplementedError("This mode does not resolve code words")
     }
 

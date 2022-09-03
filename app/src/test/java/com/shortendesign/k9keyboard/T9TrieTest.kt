@@ -79,6 +79,26 @@ class T9TrieTest {
     }
 
     @Test
+    fun testGetCandidatesForCodeWithZero() {
+        val trie = T9Trie()
+        Node.setSupportedChars("123456789")
+
+        trie.add("2", "a")
+        trie.add("23", "ad")
+        trie.add("23", "be")
+        trie.add("233", "bed", 3)
+        trie.add("233", "add")
+        trie.add("233", "bee")
+        trie.add("2333464", "bedding")
+        trie.add("233333", "bedded")
+        trie.add("2336684787", "adenovirus", 10)
+
+        val candidates = trie.getCandidates("20", 5)
+
+        print(candidates)
+    }
+
+    @Test
     fun testPrune() {
         val trie = T9Trie()
         Node.setSupportedChars("123456789")

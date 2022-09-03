@@ -2,7 +2,6 @@ package com.shortendesign.k9keyboard.helpers
 
 import com.shortendesign.k9keyboard.K9InputMethodService
 import com.shortendesign.k9keyboard.entity.Word
-import java.util.*
 
 
 class FakeK9InputMethodService: K9InputMethodService {
@@ -13,11 +12,6 @@ class FakeK9InputMethodService: K9InputMethodService {
 
     override suspend fun findCandidates(word: String): List<Word> {
         return candidates!!
-    }
-
-    override fun setComposingText(text: String, cursorPosition: Int) {
-        this.composingText = text
-        this.cursorPosition = cursorPosition
     }
 
     override fun commitText(text: String, cursorPosition: Int) {
