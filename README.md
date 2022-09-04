@@ -30,3 +30,10 @@ cp k9t9.properties-example ~/k9t9.properties
 ```
 adb push ~/k9t9.properties /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files/k9t9.properties
 ```
+You will need to restart the IME service for the settings to take effect (restarting your device may
+be the simplest way).
+
+To remove the custom settings file:
+```
+adb shell rm /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files/k9t9.properties
+```

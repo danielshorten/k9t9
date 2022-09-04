@@ -459,6 +459,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 val props = Properties()
                 props.load(input)
                 keyCodeMapping = KeyCodeMapping.fromProperties(props)
+                Log.d(LOG_TAG, "Loaded settings from k9t9.properties")
             }
         } catch (ex: FileNotFoundException) {
             Log.d(LOG_TAG, "No custom settings file found. Using default settings.")
