@@ -9,6 +9,7 @@ Minimalist, Nokia-inspired T9 keyboard for Android.
   - Capitalized word
   - All caps word
   - Numbers
+- Recomposing previously-entered words
 
 ### Installation
 Install via ADB:
