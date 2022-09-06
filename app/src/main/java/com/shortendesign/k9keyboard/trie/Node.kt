@@ -35,8 +35,11 @@ open class Node (
             }
             else {
                 //Log.d(LOG_TAG, "KEY: $key, curChar: $curChar")
-                val idx = valueMap[key[curChar]]!!
-                var child = node.children[idx]
+                val idx = valueMap[key[curChar]]
+                if (idx == null) {
+                    Log.e(LOG_TAG, "Coudn't map value for ${key[curChar]}")
+                }
+                var child = node.children[idx!!]
                 if (child == null) {
                     child = Node(key[curChar], node)
                     node.children[idx] = child

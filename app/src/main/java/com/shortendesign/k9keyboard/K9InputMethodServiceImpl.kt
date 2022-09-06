@@ -47,6 +47,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private lateinit var wordDao: WordDao
     private lateinit var settingDao: SettingDao
     private var areWordsInitialized = false
+    private var isTrieInitialized = false
 
     // Job/scope for coroutines
     private val job = SupervisorJob()
@@ -130,7 +131,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         // If we get back a code word, we'll need to resolve it
         when {
             // Don't handle any key presses for WORD input type if words aren't yet initialized
-            currentMode == K9InputType.WORD.idx && !areWordsInitialized -> {
+            currentMode == K9InputType.WORD.idx && (!areWordsInitialized || !isTrieInitialized) -> {
                 return
             }
             // Handle the case where the input mode returns a code word to be resolved.
@@ -189,6 +190,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 inputConnection?.setSelection(selection, selection)
             }
             isComposing = false
+            lastComposingText = null
         }
     }
 
@@ -344,6 +346,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         for (char in "123456789") {
             doPreloadTrie(char.toString())
         }
+        isTrieInitialized = true
     }
 
     private fun preloadTrie(key: String, minKeyLength: Int = 0, retryCandidates: Boolean = false,

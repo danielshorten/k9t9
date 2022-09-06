@@ -205,6 +205,7 @@ class WordInputMode(
         codeWord.clear()
         caseMask = 0u
         candidateIdx = 0
+        lastResolvedCodeWord = null
     }
 
     private fun isComposing(): Boolean {
