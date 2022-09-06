@@ -49,7 +49,7 @@ adb shell rm /storage/emulated/0/Android/data/com.shortendesign.k9keyboard/files
 
 ### Philosophy & Limitations
 This IME was initially designed to replace an inferior predictive text engine on a basic Android
-feature phone.  This phone (and I'm assuming others like it) do not run the Google Play store or
+feature phone.  This phone (and I'm assuming others like it) does not run the Google Play store or
 services, and doesn't even support a UI for selecting a different IME, even if it were installed.
 
 For this reason, I don't have plans to publish this app to the Google Play store.  It is intended
