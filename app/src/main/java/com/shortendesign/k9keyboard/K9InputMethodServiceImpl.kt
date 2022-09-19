@@ -85,6 +85,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         if (mode != null) {
             val result = mode.getKeyCodeResult(
                 keyCode,
+                event?.repeatCount ?: 0,
                 inputConnection?.getTextBeforeCursor(25,0),
                 inputConnection?.getTextAfterCursor(25, 0)
             )
@@ -101,7 +102,18 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 handleInputModeResult(result)
             }
         }
+        if (consumed) {
+            event?.startTracking()
+        }
         return consumed
+    }
+
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
+        if (event?.keyCode == KeyEvent.KEYCODE_0) {
+            Log.d(LOG_TAG, "LONG PRESS")
+            return true
+        }
+        return super.onKeyLongPress(keyCode, event)
     }
 
     private fun handleUnconsumedKeyEvent(event: KeyEvent?): Boolean {
