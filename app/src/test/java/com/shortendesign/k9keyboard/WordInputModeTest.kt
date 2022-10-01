@@ -93,7 +93,7 @@ class WordInputModeTest {
      */
     @Test
     fun testNextCandidateNotComposing() {
-        val result = mode!!.getKeyPressResult(Key.NEXT)
+        val result = mode!!.getKeyPressResult(Key.STAR)
 
         assertEquals(true, result.consumed)
         //assertEquals(0, result.cursorPosition)
@@ -111,9 +111,9 @@ class WordInputModeTest {
         val candidates = listOf("call", "ball")
 
         val candidate1 = mode.resolveCodeWord("2255", candidates)
-        val result1 = mode.getKeyPressResult(Key.NEXT)
+        val result1 = mode.getKeyPressResult(Key.STAR)
         val candidate2 = mode.resolveCodeWord("2255", candidates)
-        mode.getKeyPressResult(Key.NEXT)
+        mode.getKeyPressResult(Key.STAR)
         val candidate3 = mode.resolveCodeWord("2255", candidates)
 
         // ASSERT

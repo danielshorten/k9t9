@@ -1,9 +1,6 @@
 package com.shortendesign.k9keyboard
 
-import com.shortendesign.k9keyboard.util.Key
-import com.shortendesign.k9keyboard.util.KeyCodeMapping
-import com.shortendesign.k9keyboard.util.LetterLayout
-import com.shortendesign.k9keyboard.util.MissingLetterCode
+import com.shortendesign.k9keyboard.util.*
 import java.lang.StringBuilder
 
 /**
@@ -29,6 +26,10 @@ class Keypad(
      */
     fun getKey(keyCode: Int): Key? {
         return keyCodeMapping.key(keyCode)
+    }
+
+    fun getCommand(key: Key, longPress: Boolean = false): Command? {
+        return keyCodeMapping.command(key, longPress)
     }
 
     /**
@@ -60,13 +61,13 @@ class Keypad(
     // Is this the next-candidate key?
     fun isNext(key: Key): Boolean {
         // hard coded for now
-        return key == Key.NEXT
+        return key == Key.STAR
     }
 
     // Is this the next-candidate key?
     fun isShift(key: Key): Boolean {
         // hard coded for now
-        return key == Key.SHIFT
+        return key == Key.POUND
     }
 
     // Is this the space key?

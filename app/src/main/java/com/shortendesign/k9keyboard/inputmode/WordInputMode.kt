@@ -3,6 +3,7 @@ package com.shortendesign.k9keyboard.inputmode
 import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
+import com.shortendesign.k9keyboard.util.Command
 import com.shortendesign.k9keyboard.util.Key
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
@@ -29,34 +30,38 @@ class WordInputMode(
     /**
      *
      */
-    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int, textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
+    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int, longPress: Boolean,
+                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
         val key = keypad.getKey(keyCode) ?: return null
-        if (repeatCount > 0 && !(keypad.isDelete(key) || keypad.isDirection(key))) {
-            return state(consumed = true)
-        }
-        return getKeyPressResult(key, textBeforeCursor, textAfterCursor)
+        return getKeyPressResult(key, repeatCount, longPress, textBeforeCursor, textAfterCursor)
     }
 
-    fun getKeyPressResult(key: Key, textBeforeCursor: CharSequence? = null,
+    fun getKeyPressResult(key: Key, repeatCount: Int, longPress: Boolean,
+                          textBeforeCursor: CharSequence? = null,
                           textAfterCursor: CharSequence? = null): KeyPressResult {
-        return when {
-            keypad.isSpace(key) -> {
-                addSpace()
-            }
-            keypad.isLetter(key) -> {
+        val command = keypad.getCommand(key, longPress)
+        // Swallow regular keypress repeats that arent navigate or delete commands
+        if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
+            return state(consumed = true)
+        }
+        return when(command) {
+            Command.CHARACTER -> {
                 addLetter(key)
             }
-            keypad.isDelete(key) -> {
+            Command.SPACE, Command.NEWLINE -> {
+                addSpace(command == Command.NEWLINE)
+            }
+            Command.DELETE -> {
                 deleteLetter()
             }
-            keypad.isNext(key) -> {
+            Command.NAVIGATE -> {
+                navigate(key, textBeforeCursor, textAfterCursor)
+            }
+            Command.CYCLE_CANDIDATES -> {
                 nextCandidate()
             }
-            keypad.isShift(key) -> {
+            Command.SHIFT_MODE -> {
                 shiftMode()
-            }
-            keypad.isDirection(key) -> {
-                navigate(key, textBeforeCursor, textAfterCursor)
             }
             else -> {
                 if (codeWord.isNotEmpty()) {
@@ -94,12 +99,12 @@ class WordInputMode(
         return state(consumed, codeWord.toString())
     }
 
-    private fun addSpace(): KeyPressResult {
+    private fun addSpace(newline: Boolean = false): KeyPressResult {
         finishComposing()
         if (lastWordWasPeriod) {
             currentStatus = Status.WORD_CAP
         }
-        return state(consumed = true, word = " ")
+        return state(consumed = true, word = if (newline) "\n" else " ")
     }
 
     private fun nextCandidate(): KeyPressResult {

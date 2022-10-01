@@ -79,13 +79,21 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        //Log.i(LOG_TAG, "keyCode: $keyCode")
+        return handleKeyPress(keyCode, event, false)
+    }
+
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
+        return handleKeyPress(keyCode, event, true)
+    }
+
+    private fun handleKeyPress(keyCode: Int, event: KeyEvent?, long: Boolean = false): Boolean {
         var consumed = false
         val mode = this.mode
         if (mode != null) {
             val result = mode.getKeyCodeResult(
                 keyCode,
                 event?.repeatCount ?: 0,
+                long,
                 inputConnection?.getTextBeforeCursor(25,0),
                 inputConnection?.getTextAfterCursor(25, 0)
             )
@@ -102,18 +110,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 handleInputModeResult(result)
             }
         }
-        if (consumed) {
+        if (consumed && !long) {
             event?.startTracking()
         }
         return consumed
-    }
-
-    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
-        if (event?.keyCode == KeyEvent.KEYCODE_0) {
-            Log.d(LOG_TAG, "LONG PRESS")
-            return true
-        }
-        return super.onKeyLongPress(keyCode, event)
     }
 
     private fun handleUnconsumedKeyEvent(event: KeyEvent?): Boolean {
@@ -478,11 +478,13 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             }
         } catch (ex: FileNotFoundException) {
             Log.d(LOG_TAG, "No custom settings file found. Using default settings.")
-            keyCodeMapping = KeyCodeMapping(KeyCodeMapping.basic)
+            keyCodeMapping = KeyCodeMapping(
+                KeyCodeMapping.basic, KeyCodeMapping.shortCommands, KeyCodeMapping.longCommands)
         }
         catch (ex: IOException) {
             ex.printStackTrace()
-            keyCodeMapping = KeyCodeMapping(KeyCodeMapping.basic)
+            keyCodeMapping = KeyCodeMapping(
+                KeyCodeMapping.basic, KeyCodeMapping.shortCommands, KeyCodeMapping.longCommands)
         }
         return Keypad(keyCodeMapping!!, LetterLayout.enUS)
     }
