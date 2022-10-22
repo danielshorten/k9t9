@@ -36,7 +36,7 @@ class WordInputMode(
         return getKeyPressResult(key, repeatCount, longPress, textBeforeCursor, textAfterCursor)
     }
 
-    fun getKeyPressResult(key: Key, repeatCount: Int, longPress: Boolean,
+    fun getKeyPressResult(key: Key, repeatCount: Int = 0, longPress: Boolean = false,
                           textBeforeCursor: CharSequence? = null,
                           textAfterCursor: CharSequence? = null): KeyPressResult {
         val command = keypad.getCommand(key, longPress)

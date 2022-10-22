@@ -16,8 +16,8 @@ class KeyCodeMapping(
 
     fun command(key: Key, long: Boolean = false): Command? {
         return when {
-            long -> longCommands[key]
-            else -> shortCommands[key]
+            long -> longCommandMap[key]
+            else -> shortCommandMap[key]
         }
     }
 
@@ -89,6 +89,10 @@ class KeyCodeMapping(
                 longCommandMap[it.key] = Command.valueOf(commandName)
             }
             return KeyCodeMapping(keyMap, shortCommandMap, longCommandMap)
+        }
+
+        fun default(): KeyCodeMapping {
+            return KeyCodeMapping(basic, shortCommands, longCommands)
         }
     }
 }

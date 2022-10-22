@@ -15,7 +15,7 @@ class WordInputModeTest {
     @Before
     fun setup() {
         mode = WordInputMode(
-            keypad = Keypad(KeyCodeMapping(KeyCodeMapping.basic), LetterLayout.enUS)
+            keypad = Keypad(KeyCodeMapping.default(), LetterLayout.enUS)
         )
     }
 
@@ -224,6 +224,8 @@ class WordInputModeTest {
     fun testNavigateLeftEndOfWord() {
         val result = mode?.getKeyPressResult(
             Key.LEFT,
+            0,
+            false,
             "This is the text before the cursor",
             ". And this is the text after the cursor."
         )
@@ -240,6 +242,8 @@ class WordInputModeTest {
     fun testNavigateLeftMiddleOfWord() {
         val result = mode?.getKeyPressResult(
             Key.LEFT,
+            0,
+            false,
             "This is the text bef",
             "ore the cursor. And this is the text after the cursor."
         )
@@ -256,6 +260,8 @@ class WordInputModeTest {
     fun testNavigateLeftBetweenWords() {
         val result = mode?.getKeyPressResult(
             Key.LEFT,
+            0,
+            false,
             "This is the text before the cursor.",
             " And this is the text after the cursor."
         )

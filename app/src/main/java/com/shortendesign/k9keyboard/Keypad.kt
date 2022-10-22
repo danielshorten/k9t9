@@ -33,16 +33,6 @@ class Keypad(
     }
 
     /**
-     * Tell whether a key is mapped to alpha-numeric characters
-     */
-    fun isLetter(key: Key): Boolean {
-        if (keyIsLetterMap[key] == true)
-            return true
-
-        return false
-    }
-
-    /**
      * Get the numeric value associated with a key.
      * Currently the convention is to store the numeric value first in the list of characters for
      * the key.
@@ -50,35 +40,6 @@ class Keypad(
     fun getDigit(key: Key): Char? {
         val letters = letterLayout[key] ?: return null
         return if (letters.isNotEmpty() && letters[0].isDigit()) letters[0] else null
-    }
-
-    // Is this the delete key?
-    fun isDelete(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.DELETE
-    }
-
-    // Is this the next-candidate key?
-    fun isNext(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.STAR
-    }
-
-    // Is this the next-candidate key?
-    fun isShift(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.POUND
-    }
-
-    // Is this the space key?
-    fun isSpace(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.N0
-    }
-
-    // Is this a directional key?
-    fun isDirection(key: Key): Boolean {
-        return setOf(Key.LEFT, Key.RIGHT, Key.UP, Key.DOWN).contains(key)
     }
 
     /**
