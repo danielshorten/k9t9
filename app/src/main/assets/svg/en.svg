@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="15pt"
+   height="15pt"
+   viewBox="0 0 5.2916669 5.2916665"
+   version="1.1"
+   id="svg887">
+  <defs
+     id="defs881" />
+  <metadata
+     id="metadata884">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     aria-label="En"
+     id="text1237"
+     style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+     transform="translate(0,0.48817302)">
+    <g
+       aria-label="en"
+       id="text1274"
+       style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0700042">
+      <path
+         d="m 2.3605797,4.1754547 q -0.4609534,0.2191079 -0.8722974,0.2191079 -0.3121254,0 -0.55810502,-0.1550292 Q 0.68419767,4.0845043 0.53536967,3.7971835 0.38860872,3.5077958 0.38860872,3.1791339 q 0,-0.3162595 0.14055978,-0.6077143 Q 0.66972828,2.2799648 0.92190906,2.1187344 1.1740898,1.955437 1.4841482,1.955437 q 0.411344,0 0.6593907,0.2935219 0.2501137,0.2935219 0.2501137,0.9053704 v 0.082682 H 0.80201983 q 0,0.2397784 0.0992187,0.4382158 0.10128567,0.1984373 0.26458307,0.297656 0.1632974,0.099219 0.37207,0.099219 0.37207,0 0.8226881,-0.2480466 z M 0.82475745,2.9496908 H 1.9761074 v -0.05581 q 0,-0.2831866 -0.1384927,-0.4506181 -0.1384928,-0.1674315 -0.370003,-0.1674315 -0.2335773,0 -0.4051429,0.1715656 -0.16949852,0.1694985 -0.23771135,0.502294 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Monaco;-inkscape-font-specification:Monaco;stroke-width:0.0700042"
+         id="path1348" />
+      <path
+         d="M 2.9786293,4.3284168 V 2.0195158 H 3.3631016 V 2.5238773 Q 3.528466,2.2572272 3.7620433,2.1063321 3.9956206,1.955437 4.2291979,1.955437 q 0.2046385,0 0.37207,0.109554 0.1674315,0.1074869 0.2335772,0.2831866 0.068213,0.1756997 0.068213,0.6903966 V 4.3284168 H 4.5185856 V 2.9910319 q 0,-0.332796 -0.033073,-0.4382158 -0.031006,-0.1074869 -0.1178222,-0.1756997 -0.084749,-0.068213 -0.186035,-0.068213 -0.2025715,0 -0.4361487,0.1922362 -0.2315103,0.1922362 -0.3824053,0.481624 v 1.3456531 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Monaco;-inkscape-font-specification:Monaco;stroke-width:0.0700042"
+         id="path1350" />
+    </g>
+  </g>
+</svg>

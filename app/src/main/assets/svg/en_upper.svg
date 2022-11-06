@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="15pt"
+   height="15pt"
+   viewBox="0 0 5.2916669 5.2916665"
+   version="1.1"
+   id="svg887">
+  <defs
+     id="defs881" />
+  <metadata
+     id="metadata884">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     aria-label="En"
+     id="text1237"
+     style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+     transform="translate(0,0.03173412)">
+    <g
+       aria-label="EN"
+       id="text1274"
+       style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0700042">
+      <path
+         d="M 2.1786788,4.4255686 V 4.7790351 H 0.44648628 V 1.5709649 H 2.1456059 V 1.8934255 H 0.8640315 v 1.0893383 h 1.153417 v 0.3203936 h -1.153417 v 1.1224112 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Monaco;-inkscape-font-specification:Monaco;stroke-width:0.0700042"
+         id="path1307" />
+      <path
+         d="M 3.2101395,4.7790351 H 2.8256671 V 1.5709649 h 0.3762042 l 1.1348135,2.1352684 0.1240233,0.3183265 h 0.010335 L 4.4607081,3.7062333 V 1.5709649 H 4.8451804 V 4.7790351 H 4.4607081 l -1.1038077,-2.1001285 -0.1550291,-0.33693 0.00827,0.3327959 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Monaco;-inkscape-font-specification:Monaco;stroke-width:0.0700042"
+         id="path1309" />
+    </g>
+  </g>
+</svg>
