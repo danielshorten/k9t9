@@ -1,9 +1,6 @@
 package com.shortendesign.k9keyboard
 
-import com.shortendesign.k9keyboard.util.Key
-import com.shortendesign.k9keyboard.util.KeyCodeMapping
-import com.shortendesign.k9keyboard.util.LetterLayout
-import com.shortendesign.k9keyboard.util.MissingLetterCode
+import com.shortendesign.k9keyboard.util.*
 import java.lang.StringBuilder
 
 /**
@@ -31,14 +28,8 @@ class Keypad(
         return keyCodeMapping.key(keyCode)
     }
 
-    /**
-     * Tell whether a key is mapped to alpha-numeric characters
-     */
-    fun isLetter(key: Key): Boolean {
-        if (keyIsLetterMap[key] == true)
-            return true
-
-        return false
+    fun getCommand(key: Key, longPress: Boolean = false): Command? {
+        return keyCodeMapping.command(key, longPress)
     }
 
     /**
@@ -49,35 +40,6 @@ class Keypad(
     fun getDigit(key: Key): Char? {
         val letters = letterLayout[key] ?: return null
         return if (letters.isNotEmpty() && letters[0].isDigit()) letters[0] else null
-    }
-
-    // Is this the delete key?
-    fun isDelete(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.DELETE
-    }
-
-    // Is this the next-candidate key?
-    fun isNext(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.NEXT
-    }
-
-    // Is this the next-candidate key?
-    fun isShift(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.SHIFT
-    }
-
-    // Is this the space key?
-    fun isSpace(key: Key): Boolean {
-        // hard coded for now
-        return key == Key.N0
-    }
-
-    // Is this a directional key?
-    fun isDirection(key: Key): Boolean {
-        return setOf(Key.LEFT, Key.RIGHT, Key.UP, Key.DOWN).contains(key)
     }
 
     /**

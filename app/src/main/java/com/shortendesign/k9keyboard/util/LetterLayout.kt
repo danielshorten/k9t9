@@ -12,8 +12,8 @@ object LetterLayout {
         Key.N7 to listOf('7', 'p','q','r','s'),
         Key.N8 to listOf('8', 't','u','v'),
         Key.N9 to listOf('9', 'w','x','y','z'),
-        Key.NEXT to listOf('*'),
-        Key.SHIFT to listOf('#'),
+        Key.STAR to listOf('*'),
+        Key.POUND to listOf('#'),
     )
 
     // FIXME: Don't duplicate this list
