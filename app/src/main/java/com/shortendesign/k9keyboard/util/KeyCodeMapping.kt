@@ -68,7 +68,8 @@ class KeyCodeMapping(
         )
 
         val longCommands = mapOf(
-            Key.N0 to Command.NEWLINE
+            Key.N0 to Command.NEWLINE,
+            Key.POUND to Command.NEXT_MODE
         )
 
         fun fromProperties(props: Properties): KeyCodeMapping {

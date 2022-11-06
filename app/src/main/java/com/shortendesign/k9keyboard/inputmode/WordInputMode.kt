@@ -19,6 +19,7 @@ class WordInputMode(
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
     private var lastWordWasPeriod = false
+    private var lastCommand: Command? = null
     private var typingSinceModeChange = false
 
     override val status: Status
@@ -30,23 +31,15 @@ class WordInputMode(
     /**
      *
      */
-    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int, longPress: Boolean,
-                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult? {
-        val key = keypad.getKey(keyCode) ?: return null
-        return getKeyPressResult(key, repeatCount, longPress, textBeforeCursor, textAfterCursor)
-    }
-
-    fun getKeyPressResult(key: Key, repeatCount: Int = 0, longPress: Boolean = false,
-                          textBeforeCursor: CharSequence? = null,
-                          textAfterCursor: CharSequence? = null): KeyPressResult {
-        val command = keypad.getCommand(key, longPress)
+    override fun getKeyCommandResult(command: Command, key: Key?, repeatCount: Int, longPress: Boolean,
+                                     textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return state(consumed = true)
         }
-        return when(command) {
+        val result = when(command) {
             Command.CHARACTER -> {
-                addLetter(key)
+                addLetter(key!!)
             }
             Command.SPACE, Command.NEWLINE -> {
                 addSpace(command == Command.NEWLINE)
@@ -55,7 +48,7 @@ class WordInputMode(
                 deleteLetter()
             }
             Command.NAVIGATE -> {
-                navigate(key, textBeforeCursor, textAfterCursor)
+                navigate(key!!, textBeforeCursor, textAfterCursor)
             }
             Command.CYCLE_CANDIDATES -> {
                 nextCandidate()
@@ -70,6 +63,8 @@ class WordInputMode(
                 state(false)
             }
         }
+        recordNewlineShortCommand(command, key, longPress)
+        return result
     }
 
     private fun addLetter(key: Key): KeyPressResult {
@@ -104,7 +99,15 @@ class WordInputMode(
         if (lastWordWasPeriod) {
             currentStatus = Status.WORD_CAP
         }
-        return state(consumed = true, word = if (newline) "\n" else " ")
+        val cursorOffset = when (lastCommand) {
+            Command.SPACE -> -1
+            else -> 0
+        }
+        return state(
+            consumed = true,
+            word = if (newline) "\n" else " ",
+            // Delete the previously-entered space (short press) when adding the newline (long press)
+            cursorOffset = cursorOffset)
     }
 
     private fun nextCandidate(): KeyPressResult {
@@ -115,8 +118,6 @@ class WordInputMode(
     }
 
     private fun shiftMode(): KeyPressResult {
-        var consumed = true
-
         currentStatus = when (currentStatus) {
             Status.WORD -> {
                 if (typingSinceModeChange) {
@@ -136,20 +137,12 @@ class WordInputMode(
                 if (typingSinceModeChange) {
                     typingSinceModeChange = false
                     Status.WORD
-                } else {
-                    consumed = false
-                    Status.WORD_UPPER
                 }
+                Status.WORD_CAP
             }
-            else -> {
-                consumed = false
-                currentStatus
-            }
+            else -> Status.WORD_CAP
         }
-        if (!consumed) {
-            finishComposing()
-        }
-        return state(consumed)
+        return state()
     }
 
     private fun navigate(key: Key, beforeCursor: CharSequence?, afterCursor: CharSequence?): KeyPressResult {
@@ -222,6 +215,16 @@ class WordInputMode(
 
     private fun checkForPeriod(candidateWord: String) {
         lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
+    }
+
+    private fun recordNewlineShortCommand(command: Command, key: Key?, longPress: Boolean) {
+        // Track if this is the short keypress for the same long keypress that does a newline.
+        // If it is, record the command so we can undo it if necessary.
+        lastCommand = when {
+            !longPress && key != null
+                    && keypad.getCommand(key, true) == Command.NEWLINE -> command
+            else -> null
+        }
     }
 
     /**

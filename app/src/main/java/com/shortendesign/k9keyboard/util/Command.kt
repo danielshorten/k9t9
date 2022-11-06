@@ -7,6 +7,7 @@ enum class Command {
     DELETE,
     CYCLE_CANDIDATES,
     SELECT,
+    NEXT_MODE,
     SHIFT_MODE,
     NAVIGATE,
 }

@@ -7,6 +7,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.widget.Toast
 import com.shortendesign.k9keyboard.dao.SettingDao
 import com.shortendesign.k9keyboard.dao.WordDao
 import com.shortendesign.k9keyboard.db.AppDatabase
@@ -18,15 +19,13 @@ import com.shortendesign.k9keyboard.inputmode.NumberInputMode
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
 import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
-import com.shortendesign.k9keyboard.util.KeyCodeMapping
-import com.shortendesign.k9keyboard.util.LetterLayout
-import com.shortendesign.k9keyboard.util.MissingLetterCode
-import com.shortendesign.k9keyboard.util.Status
+import com.shortendesign.k9keyboard.util.*
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.lang.Math.abs
 import java.util.*
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -79,19 +78,24 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        return handleKeyPress(keyCode, event, false)
+        val key = keypad.getKey(keyCode) ?: return false
+        val command = keypad.getCommand(key) ?: return false
+        return handleCommand(command, key, event, false)
     }
 
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
-        return handleKeyPress(keyCode, event, true)
+        val key = keypad.getKey(keyCode) ?: return false
+        val command = keypad.getCommand(key, true) ?: return false
+        return handleCommand(command, key, event, true)
     }
 
-    private fun handleKeyPress(keyCode: Int, event: KeyEvent?, long: Boolean = false): Boolean {
+    private fun handleCommand(command: Command, key: Key, event: KeyEvent?, long: Boolean = false): Boolean {
         var consumed = false
         val mode = this.mode
         if (mode != null) {
-            val result = mode.getKeyCodeResult(
-                keyCode,
+            val result = mode.getKeyCommandResult(
+                command,
+                key,
                 event?.repeatCount ?: 0,
                 long,
                 inputConnection?.getTextBeforeCursor(25,0),
@@ -105,7 +109,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             if (result != null) {
                 //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
                 if (!result.consumed) {
-                    consumed = handleUnconsumedKeyEvent(event)
+                    consumed = handleUnconsumedCommand(command)
                 }
                 handleInputModeResult(result)
             }
@@ -116,9 +120,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         return consumed
     }
 
-    private fun handleUnconsumedKeyEvent(event: KeyEvent?): Boolean {
+    private fun handleUnconsumedCommand(command: Command): Boolean {
         // Delete or back
-        if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+        if (command == Command.DELETE) {
             // If the input mode isn't handling the delete, we've definitely finished composing
             finishComposing()
             // Since we're not composing, we should make sure there's no job trying to resolve some
@@ -132,7 +136,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 // Otherwise, don't handle this key press so that it bubbles up as "back"
                 false
         }
-        else if (event?.keyCode == KeyEvent.KEYCODE_POUND) {
+        else if (command == Command.NEXT_MODE) {
             switchToNextInputMode()
             return true
         }
@@ -161,6 +165,11 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // Handle the case where the input mode returns a literal word to be added to the input
             result.word != null -> {
                 // TODO: Support a delay for committing the word
+                // Support for undoing some previous characters if a long press ends up adding a
+                // different character
+                if (result.cursorOffset < 0) {
+                    inputConnection?.deleteSurroundingText(abs(result.cursorOffset), 0)
+                }
                 finishComposing()
                 inputConnection?.commitText(result.word, 1)
             }
@@ -316,14 +325,14 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     )
 
     private fun switchToNextInputMode() {
-        enableInputMode(
-            K9InputType.values()[
-                if (currentMode == K9InputType.values().size - 1)
-                    0
-                else
-                    currentMode + 1
-            ]
-        )
+        val nextInputMode = K9InputType.values()[
+            if (currentMode == K9InputType.values().size - 1)
+                0
+            else
+                currentMode + 1
+        ]
+        enableInputMode(nextInputMode)
+        alertNewMode(nextInputMode)
     }
 
     private fun enableInputMode(type: K9InputType): InputMode {
@@ -342,14 +351,24 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             modeStatus = status
             showStatusIcon(
                 when (status) {
-                    Status.WORD -> R.drawable.ime_en_lang_lower
-                    Status.WORD_CAP -> R.drawable.ime_en_lang_single
-                    Status.WORD_UPPER -> R.drawable.ime_en_lang_upper
-                    Status.NUM -> R.drawable.ime_number
+                    Status.WORD -> R.drawable.mode_en
+                    Status.WORD_CAP -> R.drawable.mode_en_cap
+                    Status.WORD_UPPER -> R.drawable.mode_en_upper
+                    Status.NUM -> R.drawable.mode_number
                     else -> 0
                 }
             )
         }
+    }
+
+    private fun alertNewMode(modeType: K9InputType) {
+        val duration = Toast.LENGTH_SHORT
+        val text = when (modeType) {
+            K9InputType.WORD -> "En"
+            K9InputType.NUMBER -> "123"
+        }
+        val toast = Toast.makeText(applicationContext, text, duration)
+        toast.show()
     }
 
     private suspend fun initT9Trie() {
