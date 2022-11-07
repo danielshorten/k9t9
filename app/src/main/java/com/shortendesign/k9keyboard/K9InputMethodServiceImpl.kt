@@ -351,10 +351,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             modeStatus = status
             showStatusIcon(
                 when (status) {
-                    Status.WORD -> R.drawable.mode_en
-                    Status.WORD_CAP -> R.drawable.mode_en_cap
-                    Status.WORD_UPPER -> R.drawable.mode_en_upper
-                    Status.NUM -> R.drawable.mode_number
+                    Status.WORD -> R.drawable.ime_en_lang_lower
+                    Status.WORD_CAP -> R.drawable.ime_en_lang_single
+                    Status.WORD_UPPER -> R.drawable.ime_en_lang_upper
+                    Status.NUM -> R.drawable.ime_number
                     else -> 0
                 }
             )
