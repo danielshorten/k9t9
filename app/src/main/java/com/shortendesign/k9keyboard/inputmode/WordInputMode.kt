@@ -19,7 +19,7 @@ class WordInputMode(
     private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
     private var lastWordWasPeriod = false
-    private var lastCommand: Command? = null
+    private var newlineShortCommand: Command? = null
     private var typingSinceModeChange = false
 
     override val status: Status
@@ -99,8 +99,10 @@ class WordInputMode(
         if (lastWordWasPeriod) {
             currentStatus = Status.WORD_CAP
         }
-        val cursorOffset = when (lastCommand) {
-            Command.SPACE -> -1
+        val cursorOffset = when {
+            // Handle the case where the corresponding short command for the newline is one that we
+            // want to undo.  For now this is only SPACE.
+            newline && newlineShortCommand == Command.SPACE -> -1
             else -> 0
         }
         return state(
@@ -220,7 +222,7 @@ class WordInputMode(
     private fun recordNewlineShortCommand(command: Command, key: Key?, longPress: Boolean) {
         // Track if this is the short keypress for the same long keypress that does a newline.
         // If it is, record the command so we can undo it if necessary.
-        lastCommand = when {
+        newlineShortCommand = when {
             !longPress && key != null
                     && keypad.getCommand(key, true) == Command.NEWLINE -> command
             else -> null

@@ -278,4 +278,69 @@ class WordInputModeTest {
             result.word, null)
     }
 
+    @Test
+    fun testUndoPreviousSpaceCommandOnNewline() {
+        // This test assumes that space is mapped to the 0 key (short press) and newline is mapped
+        // to the 0 key (long press)
+        val shortSpaceResult = mode?.getKeyCommandResult(
+            Command.SPACE,
+            Key.N0,
+            longPress = false
+        )
+
+        val longSpaceResult = mode?.getKeyCommandResult(
+            Command.NEWLINE,
+            Key.N0,
+            longPress = true
+        )
+
+        assertEquals(
+            "Short press should produce a space",
+            " ",
+            shortSpaceResult?.word
+        )
+        assertEquals(
+            "Long press should produce a newline",
+            "\n",
+            longSpaceResult?.word
+        )
+        assertEquals(
+            "Long press should request to delete the previous space",
+            -1,
+            longSpaceResult?.cursorOffset
+        )
+    }
+
+    @Test
+    fun testDontUndoPreviousSpaceCommandOnSpace() {
+        // This test assumes that space is mapped to the 0 key (short press) and newline is mapped
+        // to the 0 key (long press)
+        val shortSpaceResult = mode?.getKeyCommandResult(
+            Command.SPACE,
+            Key.N0,
+            longPress = false
+        )
+
+        val shortSpaceResult2 = mode?.getKeyCommandResult(
+            Command.SPACE,
+            Key.N0,
+            longPress = false
+        )
+
+        assertEquals(
+            "First space should produce a space",
+            " ",
+            shortSpaceResult?.word
+        )
+        assertEquals(
+            "Second space should produce a space",
+            " ",
+            shortSpaceResult2?.word
+        )
+        assertEquals(
+            "Second space should not ask to delete previous space",
+            0,
+            shortSpaceResult2?.cursorOffset
+        )
+    }
 }
