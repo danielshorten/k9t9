@@ -61,6 +61,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     // Keep track of if we're composing - we use this to help know when to commit a finished word
     private var isComposing = false
     private var lastComposingText: String? = null
+    // Keep track of the last key down code that was consumed by this IME
+    private var lastConsumedKeyDownCode: Int? = null
 
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
@@ -116,6 +118,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
         if (consumed && !long) {
             event?.startTracking()
+        }
+        if (consumed) {
+            lastConsumedKeyDownCode = event?.keyCode
         }
         return consumed
     }
@@ -257,7 +262,18 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        return super.onKeyUp(keyCode, event)
+        var consumed = false
+        // If we consumed some keycode on the key down, and it's the same code, assume that key
+        // press was consumed by the IME
+        if (lastConsumedKeyDownCode != null && lastConsumedKeyDownCode == event?.keyCode) {
+            consumed = true
+        }
+        // Clear this, now that we've examined it on the onKeyUp event
+        lastConsumedKeyDownCode = null
+        return when {
+            consumed -> true
+            else -> super.onKeyUp(keyCode, event)
+        }
     }
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
