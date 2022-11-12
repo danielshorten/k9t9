@@ -13,10 +13,7 @@ import com.shortendesign.k9keyboard.dao.WordDao
 import com.shortendesign.k9keyboard.db.AppDatabase
 import com.shortendesign.k9keyboard.entity.Setting
 import com.shortendesign.k9keyboard.entity.Word
-import com.shortendesign.k9keyboard.inputmode.InputMode
-import com.shortendesign.k9keyboard.inputmode.K9InputType
-import com.shortendesign.k9keyboard.inputmode.NumberInputMode
-import com.shortendesign.k9keyboard.inputmode.WordInputMode
+import com.shortendesign.k9keyboard.inputmode.*
 import com.shortendesign.k9keyboard.trie.Node
 import com.shortendesign.k9keyboard.trie.T9Trie
 import com.shortendesign.k9keyboard.util.*
@@ -78,8 +75,10 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        Log.d(LOG_TAG, "KEYCODE: ${keyCode}")
         val key = keypad.getKey(keyCode) ?: return false
         val command = keypad.getCommand(key) ?: return false
+        Log.d(LOG_TAG, "KEY: ${key}, COMMAND: $command")
         return handleCommand(command, key, event, false)
     }
 
@@ -338,6 +337,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private fun enableInputMode(type: K9InputType): InputMode {
         currentMode = type.idx
         val mode = when (type) {
+            K9InputType.ALPHA -> LetterInputMode(keypad)
             K9InputType.NUMBER -> NumberInputMode(keypad)
             K9InputType.WORD -> WordInputMode(keypad)
         }
@@ -365,6 +365,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         val duration = Toast.LENGTH_SHORT
         val text = when (modeType) {
             K9InputType.WORD -> "En"
+            K9InputType.ALPHA -> "Abc"
             K9InputType.NUMBER -> "123"
         }
         val toast = Toast.makeText(applicationContext, text, duration)

@@ -1,6 +1,7 @@
 package com.shortendesign.k9keyboard
 
 import com.shortendesign.k9keyboard.util.*
+import java.lang.Integer.min
 import java.lang.StringBuilder
 
 /**
@@ -30,6 +31,13 @@ class Keypad(
 
     fun getCommand(key: Key, longPress: Boolean = false): Command? {
         return keyCodeMapping.command(key, longPress)
+    }
+
+    fun getCharacter(key: Key, idx: Int): Char {
+        val chars = letterLayout.get(key)!!
+        val length = chars.size
+        val wrappedIdx = idx % min(length - 1, 1)
+        return chars[wrappedIdx]
     }
 
     /**
