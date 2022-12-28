@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard
 
+import com.shortendesign.k9keyboard.util.Key
 import com.shortendesign.k9keyboard.util.KeyCodeMapping
 import com.shortendesign.k9keyboard.util.LetterLayout
 import org.junit.Test
@@ -30,5 +31,13 @@ class KeypadTest {
     fun getCodeForCapitalizedWord() {
         val keypad = Keypad(KeyCodeMapping.default(), LetterLayout.enUS)
         assertEquals(keypad.getCodeForWord("I'm"), "416")
+    }
+
+    @Test
+    fun getCharacter() {
+        val keypad = Keypad(KeyCodeMapping.default(), LetterLayout.enUS)
+        // Test that idx wraps around to the first letter again
+        assertEquals('a', keypad.getCharacter(Key.N2, 0))
+        assertEquals('a', keypad.getCharacter(Key.N2, 3))
     }
 }

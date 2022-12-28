@@ -36,7 +36,7 @@ class Keypad(
     fun getCharacter(key: Key, idx: Int): Char {
         val chars = letterLayout.get(key)!!
         val length = chars.size
-        val wrappedIdx = idx % min(length - 1, 1)
+        val wrappedIdx = idx % (length - 1) + 1
         return chars[wrappedIdx]
     }
 

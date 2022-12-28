@@ -12,6 +12,7 @@ class LetterInputMode (
     private var currentStatus = Status.ALPHA_CAP
 
     private var charIdx = -1
+    private var currentKey: Key? = null
 
     override val status: Status
         get() = this.currentStatus
@@ -25,26 +26,56 @@ class LetterInputMode (
         }
 
         return when (command) {
-            Command.CHARACTER -> handleDigit(key!!)
+            Command.CHARACTER -> handleCharacter(key!!, longPress)
             Command.SHIFT_MODE -> KeyPressResult(true, null)
+            Command.SPACE -> addSpace(command == Command.NEWLINE)
             else -> KeyPressResult(false, null)
         }
     }
 
-    private fun handleDigit(key: Key): KeyPressResult {
-        charIdx++
-        val letter = keypad.getCharacter(key, charIdx)
+    private fun handleCharacter(key: Key, longPress: Boolean): KeyPressResult {
+        if (key != currentKey) {
+            charIdx = 0
+        }
+        else {
+            charIdx++
+        }
+        val delay = when {
+            (key != currentKey) || longPress -> 0L
+            else -> 700L
+        }
+        val offset = when {
+            longPress -> -1
+            key != currentKey -> 700
+            else -> 0
+        }
+        val character = if (!longPress) keypad.getCharacter(key, charIdx) else keypad.getDigit(key)
+        currentKey = key
         return KeyPressResult(
             true,
             null,
-            word = letter.toString(),
-            commitDelay = 1
+            word = character.toString(),
+            commitDelay = delay,
+            cursorOffset = offset
         )
     }
+
+    private fun addSpace(newline: Boolean = false): KeyPressResult {
+//        if (lastWordWasPeriod) {
+//            currentStatus = Status.WORD_CAP
+//        }
+        return KeyPressResult(
+            true,
+            null,
+            word = " "
+        )
+    }
+
 
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
                                  resetToWord: String?): String? {
         charIdx = -1
+        currentKey = null
         return null
     }
 }

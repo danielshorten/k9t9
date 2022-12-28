@@ -12,5 +12,5 @@ class KeyPressResult(
     //
     val cursorOffset: Int = 0,
     // Delay before committing the word
-    val commitDelay: Int = 0
+    val commitDelay: Long = 0
 ) {}

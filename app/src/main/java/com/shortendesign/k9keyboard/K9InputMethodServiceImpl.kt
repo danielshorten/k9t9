@@ -50,6 +50,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private val scope = CoroutineScope(Dispatchers.IO + job)
     // current trie preloading job
     private var preloadJob: Job? = null
+    // current delayed commit job
+    private var delayedCommitJob: Job? = null
     // Keep track of recently preloaded keys to reduce unnecessary loading
     private val preloadsToCache = 3
     private val lastNPreloads = ArrayBlockingQueue<String>(preloadsToCache)
@@ -151,7 +153,6 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             }
             // Handle the case where the input mode returns a code word to be resolved.
             result.codeWord != null -> {
-                isComposing = true
                 if (result.recomposing) {
                     handleRecomposing(result)
                 }
@@ -164,13 +165,23 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             // Handle the case where the input mode returns a literal word to be added to the input
             result.word != null -> {
                 // TODO: Support a delay for committing the word
-                // Support for undoing some previous characters if a long press ends up adding a
-                // different character
-                if (result.cursorOffset < 0) {
-                    inputConnection?.deleteSurroundingText(abs(result.cursorOffset), 0)
+                if (result.commitDelay > 0) {
+                    setComposingText(result.word, result.commitDelay)
                 }
-                finishComposing()
-                inputConnection?.commitText(result.word, 1)
+                else {
+                    // Support for undoing some previous characters if a long press ends up adding a
+                    // different character
+                    if (result.cursorOffset < 0) {
+                        inputConnection?.deleteSurroundingText(abs(result.cursorOffset), 0)
+                    }
+                    finishComposing()
+                    if (result.cursorOffset > 0) {
+                        setComposingText(result.word, (result.cursorOffset.toLong()))
+                    }
+                    else {
+                        inputConnection?.commitText(result.word, 1)
+                    }
+                }
             }
             // If we get nothing back, it's some unhandled action and we'll assume we should be
             // committing the current composition.
@@ -197,9 +208,18 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         setComposingText(result.word!!)
     }
 
-    private fun setComposingText(composingText: String) {
+    private fun setComposingText(composingText: String, commitDelay: Long? = null) {
+        isComposing = true
         lastComposingText = composingText
         inputConnection?.setComposingText(composingText, 1)
+        if (commitDelay != null) {
+            delayedCommitJob?.cancel()
+            delayedCommitJob = scope.launch {
+                delay(commitDelay)
+                finishComposing()
+                mode?.resolveCodeWord("", listOf())
+            }
+        }
     }
 
     private fun finishComposing(cursorOffset: Int = 0) {
