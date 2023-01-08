@@ -32,16 +32,23 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     // Current input mode (e.g. Word, letter, number)
     private var mode: InputMode? = null
+    // Hold on to references to modes while we're still using the input method
+    private var wordMode: InputMode? = null
+    private var letterMode: InputMode? = null
+    private var numberMode: InputMode? = null
     // Mode enum value for cycling through modes
     private var currentMode = K9InputType.WORD.idx
     // Current status for the input mode (e.g. capitalized word, all-caps letters)
     private var modeStatus: Status? = null
     // Keypad class to handle key/character mapping
     private lateinit var keypad: Keypad
+    // For handling basic key->command mapping
+    private lateinit var keyCommandResolver: KeyCommandResolver
 
     private lateinit var db: AppDatabase
     private lateinit var wordDao: WordDao
     private lateinit var settingDao: SettingDao
+    private var customProperties: Properties? = null
     private var areWordsInitialized = false
     private var isTrieInitialized = false
 
@@ -72,31 +79,28 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         db = AppDatabase.getInstance(this)
         wordDao = db.getWordDao()
         settingDao = db.getSettingDao()
-        keypad = loadKeyPad()
+        customProperties = loadCustomProperties()
+        val (keypad, keyCommandResolver) = loadKeyPadAndCommandResolver(customProperties)
+        this.keypad = keypad
+        this.keyCommandResolver = keyCommandResolver
         initializeWordsFirstTime()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(LOG_TAG, "KEYCODE: ${keyCode}")
-        val key = keypad.getKey(keyCode) ?: return false
-        val command = keypad.getCommand(key) ?: return false
-        Log.d(LOG_TAG, "KEY: ${key}, COMMAND: $command")
-        return handleCommand(command, key, event, false)
+        return handleKeyCode(keyCode, event, false)
     }
 
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
-        val key = keypad.getKey(keyCode) ?: return false
-        val command = keypad.getCommand(key, true) ?: return false
-        return handleCommand(command, key, event, true)
+        return handleKeyCode(keyCode, event, true)
     }
 
-    private fun handleCommand(command: Command, key: Key, event: KeyEvent?, long: Boolean = false): Boolean {
+    private fun handleKeyCode(keyCode: Int, event: KeyEvent?, long: Boolean = false): Boolean {
         var consumed = false
         val mode = this.mode
         if (mode != null) {
-            val result = mode.getKeyCommandResult(
-                command,
-                key,
+            val result = mode.getKeyCodeResult(
+                keyCode,
                 event?.repeatCount ?: 0,
                 long,
                 inputConnection?.getTextBeforeCursor(25,0),
@@ -109,8 +113,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
             if (result != null) {
                 //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
-                if (!result.consumed) {
-                    consumed = handleUnconsumedCommand(command)
+                if (!result.consumed && result.command != null) {
+                    consumed = handleUnconsumedCommand(result.command)
                 }
                 handleInputModeResult(result)
             }
@@ -356,11 +360,18 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     private fun enableInputMode(type: K9InputType): InputMode {
         currentMode = type.idx
-        val mode = when (type) {
-            K9InputType.ALPHA -> LetterInputMode(keypad)
-            K9InputType.NUMBER -> NumberInputMode(keypad)
-            K9InputType.WORD -> WordInputMode(keypad)
+        val mode = when(type) {
+            K9InputType.ALPHA -> letterMode ?: LetterInputMode(keypad)
+            K9InputType.NUMBER -> numberMode ?: NumberInputMode(keypad)
+            K9InputType.WORD -> wordMode ?: WordInputMode(keypad)
         }
+        // Cache the mode for use later
+        when(type) {
+            K9InputType.ALPHA -> {letterMode = mode}
+            K9InputType.NUMBER -> {numberMode = mode}
+            K9InputType.WORD -> {wordMode = mode}
+        }
+        mode.load(keyCommandResolver, customProperties)
         this.mode = mode
         updateStatusIcon(mode.status)
         return mode
@@ -503,30 +514,40 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
     }
 
-    private fun loadKeyPad(): Keypad {
-        var keyCodeMapping: KeyCodeMapping?
+    private fun loadCustomProperties(): Properties? {
+        var properties: Properties? = null
         try {
             val dir = applicationContext.getExternalFilesDir(null)
             if (dir?.exists() == false) {
                 dir.mkdir()
             }
             FileInputStream(File(dir, "k9t9.properties")).use { input ->
-                val props = Properties()
+                val props =  Properties()
                 props.load(input)
-                keyCodeMapping = KeyCodeMapping.fromProperties(props)
                 Log.d(LOG_TAG, "Loaded settings from k9t9.properties")
+                properties = props
             }
         } catch (ex: FileNotFoundException) {
             Log.d(LOG_TAG, "No custom settings file found. Using default settings.")
-            keyCodeMapping = KeyCodeMapping(
-                KeyCodeMapping.basic, KeyCodeMapping.shortCommands, KeyCodeMapping.longCommands)
         }
         catch (ex: IOException) {
             ex.printStackTrace()
-            keyCodeMapping = KeyCodeMapping(
-                KeyCodeMapping.basic, KeyCodeMapping.shortCommands, KeyCodeMapping.longCommands)
         }
-        return Keypad(keyCodeMapping!!, LetterLayout.enUS)
+        return properties
+    }
+
+    private fun loadKeyPadAndCommandResolver(properties: Properties?): Pair<Keypad, KeyCommandResolver> {
+        return if (properties != null) {
+            Pair(
+                Keypad(KeyCodeMapping.fromProperties(properties), LetterLayout.enUS),
+                KeyCommandResolver.fromProperties(properties)
+            )
+        } else {
+            Pair(
+                Keypad(KeyCodeMapping(KeyCodeMapping.basic), LetterLayout.enUS),
+                KeyCommandResolver.getBasic()
+            )
+        }
     }
 
     /***************************** HELPERS ****************************************/

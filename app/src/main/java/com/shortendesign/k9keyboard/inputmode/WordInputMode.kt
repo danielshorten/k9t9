@@ -1,12 +1,14 @@
 package com.shortendesign.k9keyboard.inputmode
 
-import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Command
 import com.shortendesign.k9keyboard.util.Key
+import com.shortendesign.k9keyboard.util.KeyCommandResolver
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
+import java.util.*
+import kotlin.collections.HashMap
 
 class WordInputMode(
     private val keypad: Keypad,
@@ -22,17 +24,40 @@ class WordInputMode(
     private var newlineShortCommand: Command? = null
     private var typingSinceModeChange = false
 
+    private var keyCommandResolver: KeyCommandResolver? = null
+
     override val status: Status
         get() = this.currentStatus
 
     private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
 
+    override fun load(parent: KeyCommandResolver, properties: Properties?) {
+        if (keyCommandResolver != null) {
+            return
+        }
+        val resolver = KeyCommandResolver(
+            hashMapOf(
+                Key.STAR to Command.CYCLE_CANDIDATES,
+            ),
+            hashMapOf(
+                Key.N0 to Command.NEWLINE
+            ),
+            parent
+        )
+        if (properties != null) {
+            resolver.overrideFromProperties(properties, "command.word")
+        }
+        keyCommandResolver = resolver
+    }
+
     /**
      *
      */
-    override fun getKeyCommandResult(command: Command, key: Key?, repeatCount: Int, longPress: Boolean,
-                                     textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int, longPress: Boolean,
+                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+        val key = keypad.getKey(keyCode)
+        val command = if (key != null) keyCommandResolver?.getCommand(key, longPress) else null
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return state(consumed = true)
@@ -63,7 +88,9 @@ class WordInputMode(
                 state(false)
             }
         }
-        recordNewlineShortCommand(command, key, longPress)
+        if (command != null) {
+            recordNewlineShortCommand(command, key, longPress)
+        }
         return result
     }
 
@@ -91,7 +118,7 @@ class WordInputMode(
                 candidateIdx = 0
             }
         }
-        return state(consumed, codeWord.toString())
+        return state(consumed, codeWord = codeWord.toString())
     }
 
     private fun addSpace(newline: Boolean = false): KeyPressResult {
@@ -186,7 +213,7 @@ class WordInputMode(
         }
     }
 
-    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null,
+    private fun state(consumed: Boolean = true, command: Command? = null, codeWord: String = "", word: String? = null,
                       recomposing: Boolean = false, cursorOffset: Int = 0): KeyPressResult {
         var finalCodeWord: String? = codeWord
         if (finalCodeWord!!.isEmpty()) {
@@ -197,6 +224,7 @@ class WordInputMode(
         }
         return KeyPressResult(
             consumed = consumed,
+            command = command,
             codeWord = finalCodeWord,
             word = word,
             recomposing = recomposing,
@@ -224,7 +252,7 @@ class WordInputMode(
         // If it is, record the command so we can undo it if necessary.
         newlineShortCommand = when {
             !longPress && key != null
-                    && keypad.getCommand(key, true) == Command.NEWLINE -> command
+                    && keyCommandResolver?.getCommand(key, true) == Command.NEWLINE -> command
             else -> null
         }
     }

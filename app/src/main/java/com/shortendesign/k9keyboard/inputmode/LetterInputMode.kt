@@ -4,7 +4,9 @@ import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Command
 import com.shortendesign.k9keyboard.util.Key
+import com.shortendesign.k9keyboard.util.KeyCommandResolver
 import com.shortendesign.k9keyboard.util.Status
+import java.util.*
 
 class LetterInputMode (
     private val keypad: Keypad
@@ -13,23 +15,54 @@ class LetterInputMode (
 
     private var charIdx = -1
     private var currentKey: Key? = null
+    private var keyCommandResolver: KeyCommandResolver? = null
 
     override val status: Status
         get() = this.currentStatus
 
-    override fun getKeyCommandResult(command: Command, key: Key?, repeatCount: Int,
-                                     longPress: Boolean, textBeforeCursor: CharSequence?,
-                                     textAfterCursor: CharSequence?): KeyPressResult {
+    override fun load(parent: KeyCommandResolver, properties: Properties?) {
+        if (keyCommandResolver != null)  {
+            return
+        }
+        val resolver = KeyCommandResolver(
+            hashMapOf(
+                Key.STAR to Command.CHARACTER,
+            ),
+            hashMapOf(
+                Key.N0 to Command.CHARACTER,
+                Key.N1 to Command.CHARACTER,
+                Key.N2 to Command.CHARACTER,
+                Key.N3 to Command.CHARACTER,
+                Key.N4 to Command.CHARACTER,
+                Key.N5 to Command.CHARACTER,
+                Key.N6 to Command.CHARACTER,
+                Key.N7 to Command.CHARACTER,
+                Key.N8 to Command.CHARACTER,
+                Key.N9 to Command.CHARACTER
+            ),
+            parent
+        )
+        if (properties != null) {
+            resolver.overrideFromProperties(properties, "command.word")
+        }
+        keyCommandResolver = resolver
+    }
+
+    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int,
+                                  longPress: Boolean, textBeforeCursor: CharSequence?,
+                                  textAfterCursor: CharSequence?): KeyPressResult {
+        val key = keypad.getKey(keyCode)
+        val command = if (key != null) keyCommandResolver?.getCommand(key, longPress) else null
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
-            return KeyPressResult(true, null)
+            return KeyPressResult(true, null, null)
         }
 
         return when (command) {
             Command.CHARACTER -> handleCharacter(key!!, longPress)
-            Command.SHIFT_MODE -> KeyPressResult(true, null)
+            Command.SHIFT_MODE -> KeyPressResult(true, null, null)
             Command.SPACE -> addSpace(command == Command.NEWLINE)
-            else -> KeyPressResult(false, null)
+            else -> KeyPressResult(false, null, null)
         }
     }
 
@@ -54,6 +87,7 @@ class LetterInputMode (
         return KeyPressResult(
             true,
             null,
+            null,
             word = character.toString(),
             commitDelay = delay,
             cursorOffset = offset
@@ -66,6 +100,7 @@ class LetterInputMode (
 //        }
         return KeyPressResult(
             true,
+            null,
             null,
             word = " "
         )

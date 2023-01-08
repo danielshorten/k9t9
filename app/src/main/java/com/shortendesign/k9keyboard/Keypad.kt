@@ -1,7 +1,6 @@
 package com.shortendesign.k9keyboard
 
 import com.shortendesign.k9keyboard.util.*
-import java.lang.Integer.min
 import java.lang.StringBuilder
 
 /**
@@ -27,10 +26,6 @@ class Keypad(
      */
     fun getKey(keyCode: Int): Key? {
         return keyCodeMapping.key(keyCode)
-    }
-
-    fun getCommand(key: Key, longPress: Boolean = false): Command? {
-        return keyCodeMapping.command(key, longPress)
     }
 
     fun getCharacter(key: Key, idx: Int): Char {

@@ -12,9 +12,9 @@ class NumberInputMode (
     override val status: Status
         get() = Status.NUM
 
-    override fun getKeyCommandResult(command: Command, key: Key?, repeatCount: Int,
-                                     longPress: Boolean, textBeforeCursor: CharSequence?,
-                                     textAfterCursor: CharSequence?): KeyPressResult {
+    override fun getKeyCodeResult(command: Command, key: Key?, repeatCount: Int,
+                                  longPress: Boolean, textBeforeCursor: CharSequence?,
+                                  textAfterCursor: CharSequence?): KeyPressResult {
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return KeyPressResult(true, null)
