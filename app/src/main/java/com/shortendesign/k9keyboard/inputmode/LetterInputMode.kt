@@ -48,18 +48,17 @@ class LetterInputMode (
         keyCommandResolver = resolver
     }
 
-    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int,
+    override fun getKeyCodeResult(key: Key, repeatCount: Int,
                                   longPress: Boolean, textBeforeCursor: CharSequence?,
                                   textAfterCursor: CharSequence?): KeyPressResult {
-        val key = keypad.getKey(keyCode)
-        val command = if (key != null) keyCommandResolver?.getCommand(key, longPress) else null
+        val command = keyCommandResolver?.getCommand(key, longPress)
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return KeyPressResult(true, null, null)
         }
 
         return when (command) {
-            Command.CHARACTER -> handleCharacter(key!!, longPress)
+            Command.CHARACTER -> handleCharacter(key, longPress)
             Command.SHIFT_MODE -> KeyPressResult(true, null, null)
             Command.SPACE -> addSpace(command == Command.NEWLINE)
             else -> KeyPressResult(false, null, null)

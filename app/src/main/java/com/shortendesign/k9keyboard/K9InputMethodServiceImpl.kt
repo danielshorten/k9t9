@@ -88,24 +88,29 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(LOG_TAG, "KEYCODE: ${keyCode}")
-        return handleKeyCode(keyCode, event, false)
+        val key = keypad.getKey(keyCode)
+        return handleKeyCode(key, event, false)
     }
 
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
-        return handleKeyCode(keyCode, event, true)
+        val key = keypad.getKey(keyCode)
+        return handleKeyCode(key, event, true)
     }
 
-    private fun handleKeyCode(keyCode: Int, event: KeyEvent?, long: Boolean = false): Boolean {
+    private fun handleKeyCode(key: Key?, event: KeyEvent?, long: Boolean = false): Boolean {
         var consumed = false
         val mode = this.mode
         if (mode != null) {
-            val result = mode.getKeyCodeResult(
-                keyCode,
-                event?.repeatCount ?: 0,
-                long,
-                inputConnection?.getTextBeforeCursor(25,0),
-                inputConnection?.getTextAfterCursor(25, 0)
-            )
+            val result = when (key) {
+                null -> null
+                else -> mode.getKeyCodeResult(
+                    key,
+                    event?.repeatCount ?: 0,
+                    long,
+                    inputConnection?.getTextBeforeCursor(25,0),
+                    inputConnection?.getTextAfterCursor(25, 0)
+                )
+            }
             //Log.d(LOG_TAG, "Result: $result")
             //Log.d(LOG_TAG, "Result codeWord: ${result?.codeWord}")
             consumed = result?.consumed ?: false
@@ -113,8 +118,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
             if (result != null) {
                 //Log.d(LOG_TAG, "CODEWORD: ${result.codeWord}")
-                if (!result.consumed && result.command != null) {
-                    consumed = handleUnconsumedCommand(result.command)
+                if (!result.consumed && key != null) {
+                    val command = keyCommandResolver.getCommand(key, long)
+                    consumed = if (command != null ) handleUnconsumedCommand(command) else false
                 }
                 handleInputModeResult(result)
             }
@@ -323,6 +329,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         super.onFinishInput()
         hideStatusIcon()
         mode = null
+        numberMode = null
+        letterMode = null
+        wordMode = null
         cursorPosition = 0
         modeStatus = null
         t9Trie.prune("a", depth = 3)

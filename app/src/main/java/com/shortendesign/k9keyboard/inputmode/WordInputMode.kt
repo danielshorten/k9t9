@@ -8,7 +8,6 @@ import com.shortendesign.k9keyboard.util.KeyCommandResolver
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
 import java.util.*
-import kotlin.collections.HashMap
 
 class WordInputMode(
     private val keypad: Keypad,
@@ -54,10 +53,9 @@ class WordInputMode(
     /**
      *
      */
-    override fun getKeyCodeResult(keyCode: Int, repeatCount: Int, longPress: Boolean,
+    override fun getKeyCodeResult(key: Key, repeatCount: Int, longPress: Boolean,
                                   textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
-        val key = keypad.getKey(keyCode)
-        val command = if (key != null) keyCommandResolver?.getCommand(key, longPress) else null
+        val command = keyCommandResolver?.getCommand(key, longPress)
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return state(consumed = true)
