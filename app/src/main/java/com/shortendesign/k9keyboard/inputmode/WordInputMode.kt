@@ -1,5 +1,6 @@
 package com.shortendesign.k9keyboard.inputmode
 
+import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Command
@@ -8,6 +9,7 @@ import com.shortendesign.k9keyboard.util.KeyCommandResolver
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
 import java.util.*
+import java.util.regex.Pattern
 
 class WordInputMode(
     private val keypad: Keypad,
@@ -28,7 +30,7 @@ class WordInputMode(
     override val status: Status
         get() = this.currentStatus
 
-    private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
+    private val shouldRecomposeBeforeRegex = """([\w]+?)(\n*)\Z""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
 
     override fun load(parent: KeyCommandResolver, properties: Properties?) {
@@ -181,13 +183,15 @@ class WordInputMode(
 
             val cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
                 afterMatches.groups[0]?.value!!.length
-            } else if (key == Key.LEFT && beforeMatches != null) {
+            } else if (key == Key.LEFT && beforeMatches != null && beforeMatches.groups[2]?.value.equals("")) {
                 -beforeMatches.groups[0]?.value!!.length
             } else {
                 return state(false)
             }
+
             val afterText = afterMatches?.groups?.get(0)?.value ?: ""
-            val recomposingWord = (beforeMatches?.groups?.get(0)?.value ?: "") + afterText
+            val beforeText = if (beforeMatches?.groups?.get(2)?.value?.equals("") == true) beforeMatches.groups[1]?.value else ""
+            val recomposingWord = beforeText + afterText
             codeWord.clear()
             codeWord.append(keypad.getCodeForWord(recomposingWord))
             caseMask = getMaskFromWord(recomposingWord)

@@ -275,6 +275,24 @@ class WordInputModeTest {
     }
 
     @Test
+    fun testNavigateRightAfterLinebreak() {
+        val result = mode?.getKeyCodeResult(
+            Key.RIGHT,
+            0,
+            false,
+            "This is the\ntext before the\ncursor.\n",
+            "Porcupine"
+        )
+
+        assertTrue(
+            "Navigating right after a linebreak should trigger recomposing",
+            result!!.recomposing)
+        assertEquals(
+            "There shouldn't be a recomposing word",
+            "Porcupine", result.word)
+    }
+
+    @Test
     fun testUndoPreviousSpaceCommandOnNewline() {
         // This test assumes that space is mapped to the 0 key (short press) and newline is mapped
         // to the 0 key (long press)
