@@ -20,7 +20,8 @@ class LetterInputMode (
     override val status: Status
         get() = this.currentStatus
 
-    override fun load(parent: KeyCommandResolver, properties: Properties?) {
+    override fun load(parent: KeyCommandResolver, properties: Properties?,
+                      beforeText: CharSequence?) {
         if (keyCommandResolver != null)  {
             return
         }

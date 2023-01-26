@@ -380,7 +380,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             K9InputType.NUMBER -> {numberMode = mode}
             K9InputType.WORD -> {wordMode = mode}
         }
-        mode.load(keyCommandResolver, customProperties)
+        mode.load(keyCommandResolver, customProperties, inputConnection?.getTextBeforeCursor(5, 0))
         this.mode = mode
         updateStatusIcon(mode.status)
         return mode

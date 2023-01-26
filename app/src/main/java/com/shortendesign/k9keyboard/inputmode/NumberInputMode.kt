@@ -15,7 +15,8 @@ class NumberInputMode (
     override val status: Status
         get() = Status.NUM
 
-    override fun load(parent: KeyCommandResolver, properties: Properties?) {
+    override fun load(parent: KeyCommandResolver, properties: Properties?,
+                      beforeText: CharSequence?) {
         keyCommandResolver = parent
     }
 

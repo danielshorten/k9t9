@@ -9,7 +9,7 @@ import java.util.Properties
 interface InputMode {
     val status: Status
 
-    fun load(parent: KeyCommandResolver, properties: Properties?)
+    fun load(parent: KeyCommandResolver, properties: Properties?, beforeText: CharSequence?)
 
     fun getKeyCodeResult(key: Key, repeatCount: Int = 0, longPress: Boolean = false,
                          textBeforeCursor: CharSequence? = null,

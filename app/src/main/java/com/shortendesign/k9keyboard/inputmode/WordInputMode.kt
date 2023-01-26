@@ -1,6 +1,5 @@
 package com.shortendesign.k9keyboard.inputmode
 
-import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
 import com.shortendesign.k9keyboard.util.Command
@@ -9,7 +8,6 @@ import com.shortendesign.k9keyboard.util.KeyCommandResolver
 import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
 import java.util.*
-import java.util.regex.Pattern
 
 class WordInputMode(
     private val keypad: Keypad,
@@ -32,8 +30,21 @@ class WordInputMode(
 
     private val shouldRecomposeBeforeRegex = """([\w]+?)(\n*)\Z""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
+    private val endOfSentence = """[.!]+\s*""".toRegex()
 
-    override fun load(parent: KeyCommandResolver, properties: Properties?) {
+    override fun load(parent: KeyCommandResolver, properties: Properties?,
+                      beforeText: CharSequence?) {
+        finishComposing()
+        currentStatus = if (beforeText != null) {
+            if (beforeText == "" || endOfSentence.find(beforeText) != null) {
+                Status.WORD_CAP
+            } else {
+                Status.WORD
+            }
+        } else {
+            Status.WORD_CAP
+        }
+
         if (keyCommandResolver != null) {
             return
         }
@@ -64,7 +75,7 @@ class WordInputMode(
         }
         val result = when(command) {
             Command.CHARACTER -> {
-                addLetter(key!!)
+                addLetter(key)
             }
             Command.SPACE, Command.NEWLINE -> {
                 addSpace(command == Command.NEWLINE)
@@ -73,7 +84,7 @@ class WordInputMode(
                 deleteLetter()
             }
             Command.NAVIGATE -> {
-                navigate(key!!, textBeforeCursor, textAfterCursor)
+                navigate(key, textBeforeCursor, textAfterCursor)
             }
             Command.CYCLE_CANDIDATES -> {
                 nextCandidate()
