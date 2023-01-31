@@ -5822,7 +5822,7 @@ baptismally
 baptisms
 baptism's
 baptistery
-bar
+bar 4
 barb
 barbarian
 barbarianism
@@ -8376,7 +8376,7 @@ boodle
 booger
 boogie
 boohoo
-book
+book 6
 bookbinder
 bookbinders
 bookbindery
@@ -10676,7 +10676,7 @@ canyons
 canyon's
 canzone
 canzonet
-cap
+cap 3
 capabilities
 capability
 capability's
@@ -10807,7 +10807,7 @@ capuche
 capuchin
 caput
 capybara
-car
+car 5
 carabineer
 caracal
 caracara
@@ -15568,7 +15568,7 @@ conjurers
 conjures
 conjuring
 conjuror
-conk
+conk 3
 conked
 conker
 conkers
@@ -16397,7 +16397,7 @@ convulsively
 convulsiveness
 coo
 cooing
-cook
+cook 4
 cookbook
 cookbooks
 cooked
@@ -16414,7 +16414,7 @@ cookouts
 cooks
 cook's
 cookware
-cool
+cool 5
 coolant
 coolants
 cooled
@@ -16932,7 +16932,7 @@ cottony
 cotyledon
 cotyledons
 cotyledon's
-couch
+couch 5
 couchant
 couched
 couches
@@ -18710,7 +18710,7 @@ darnel
 darner
 darning
 darns
-dart
+dart 3
 d'art
 dartboard
 darted
@@ -23190,7 +23190,7 @@ donating
 donation
 donations
 donator
-done 2
+done 5
 doneness
 dong
 donga
@@ -24311,7 +24311,7 @@ easiest
 easily
 easiness
 easing
-east
+east 4
 eastbound
 Easter
 easterly
@@ -28550,7 +28550,7 @@ farrow
 farseeing
 farsighted
 farsightedness
-fart
+fart 2
 farther
 farthermost
 farthest
@@ -28589,7 +28589,7 @@ fashioners
 fashioning
 fashionmonger
 fashions
-fast
+fast 5
 fastback
 fastball
 fastballs
@@ -30485,7 +30485,7 @@ font
 fontal
 fonts
 font's
-food
+food 4
 foodless
 foodlessness
 foods
@@ -42522,7 +42522,7 @@ kina
 kinaesthesia
 kinaesthetic
 kinaesthetically
-kind
+kind 5
 kinder
 kindergarten
 kindergartner
@@ -44211,7 +44211,7 @@ limbless
 limbo
 limbos
 limbs
-lime
+lime 3
 limeade
 limed
 limekiln
@@ -44278,7 +44278,7 @@ linchpin
 linchpins
 linchpin's
 linden
-line
+line 4
 lineage
 lineages
 lineal
@@ -53151,7 +53151,7 @@ pauses
 pausing
 pavane
 pave
-paved
+paved 8
 pavement
 pavements
 pavement's
@@ -53324,7 +53324,7 @@ pediment
 pedometer
 pedometers
 pedometer's
-pee
+pee 3
 peek
 peeked
 peeking
@@ -55538,7 +55538,7 @@ ponders
 ponds
 pondweed
 pone
-pong
+pong 3
 pongee
 poniard
 ponies
@@ -55892,7 +55892,7 @@ potlatches
 potluck
 potpie
 potpourri
-pots
+pots 2
 pot's
 potsherd
 potstone
@@ -55927,7 +55927,7 @@ pounded
 pounder
 pounding
 pounds
-pour
+pour 4
 pourboire
 poured
 pourer
@@ -58867,7 +58867,7 @@ ratcheted
 ratchets
 rate
 rateable
-rated
+rated 9
 ratepayer
 ratepayers
 rates
@@ -58949,7 +58949,7 @@ ravagers
 ravages
 ravaging
 rave
-raved
+raved 7
 ravel
 ravelled
 ravelling
@@ -59657,7 +59657,7 @@ recycle
 recycled
 recycles
 recycling
-red
+red 4
 redact
 redaction
 redactions
@@ -59862,7 +59862,7 @@ re-examine
 re-examined
 re-examines
 re-examining
-ref
+ref 2
 reface
 refaced
 refashion
@@ -61954,7 +61954,7 @@ ringdove
 ringed
 ringer
 ringers
-ringing
+ringing 4
 ringleader
 ringleaders
 ringlet
@@ -62478,7 +62478,7 @@ rubout
 rubric
 rubs
 rubstone
-ruby
+ruby 4
 ruby's
 ruche
 ruck
@@ -62602,8 +62602,8 @@ runnels
 runner
 runner's
 runners
-running
-runny
+running 5
+runny 4
 runoff
 runoffs
 runs 3
@@ -63196,7 +63196,7 @@ savant
 savants
 save
 saveable
-saved
+saved 10
 saver
 savers
 saves
@@ -63798,7 +63798,7 @@ scud
 scudded
 scudding
 scuds
-scuff
+scuff 6
 scuffed
 scuffing
 scuffle
@@ -65574,7 +65574,7 @@ simper
 simpered
 simpering
 simpers
-simple
+simple 5
 simpleminded
 simplemindedly
 simpler
@@ -65636,7 +65636,7 @@ singeing
 singer
 singer's
 singers
-singing
+singing 5
 single
 singled
 singleness
@@ -66369,7 +66369,7 @@ smitten
 smock
 smocking
 smocks
-smog
+smog 2
 smoggier
 smoggy
 smoke
@@ -66939,7 +66939,7 @@ sonant
 sonar
 sonata
 sonatas
-song
+song 4
 song's
 songbird
 songbook
@@ -67074,13 +67074,13 @@ soundproofed
 soundproofing
 soundproofs
 sounds 3
-soup
+soup 5
 soup's
 soupier
 soups
 soupspoon
 soupy
-sour
+sour 3
 source
 source's
 sources
@@ -68296,7 +68296,7 @@ stave
 staved
 staves
 staving
-stay
+stay 5
 stayed
 staying
 stays
@@ -68748,8 +68748,8 @@ stoneworker
 stonier
 stonily
 stoniness
-stoning
-stony
+stoning 3
+stony 3
 stonyhearted
 stood
 stooge
@@ -69914,8 +69914,8 @@ sunlight
 sunlit
 sunned
 sunnier
-sunning
-sunny
+sunning 4
+sunny 5
 sunray
 sunrise
 sunrises
@@ -78032,7 +78032,7 @@ weapon's
 weaponed
 weaponry
 weapons
-wear
+wear 4
 wearable
 wearer
 wearied
@@ -78079,7 +78079,7 @@ web's
 webbed
 webbing
 webfoot
-webs
+webs 3
 wed
 wedded
 wedding
@@ -79541,7 +79541,7 @@ yea
 yeah
 yean
 yeanling
-year
+year 5
 year's
 yearbook
 yearling
