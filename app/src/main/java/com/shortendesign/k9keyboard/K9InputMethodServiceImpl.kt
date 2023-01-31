@@ -246,7 +246,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
 
     fun resolveCodeWord(codeWord: String, final: Boolean = false,
                         recomposingResult: KeyPressResult? = null) {
-        val candidates = t9Trie.getCandidates(codeWord, 7, codeWord.length)
+        val candidates = t9Trie.getCandidates(codeWord, maxLength = codeWord.length)
 //        Log.d(LOG_TAG, "CANDIDATES for $codeWord: $candidates")
         // Special case: if the new codeword is one character shorter than the last-seen composing
         // text, assume we're deleting
