@@ -14,28 +14,26 @@ class WordInputMode(
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
-    private var caseMask: UInt = 0u
+    var letterCase: CaseTransformer? = null
     // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
-    private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
-    private var lastWordWasPeriod = false
     private var newlineShortCommand: Command? = null
-    private var typingSinceModeChange = false
 
     private var keyCommandResolver: KeyCommandResolver? = null
 
     override val status: Status
-        get() = this.currentStatus
+        get() = this.letterCase?.status ?: Status.WORD_CAP
 
     private val shouldRecomposeBeforeRegex = """([\w]+?)(\n*)\Z""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
+    // TODO: maybe this could move into LetterCase
     private val endOfSentence = """[.!]+\s*""".toRegex()
 
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {
         finishComposing()
-        currentStatus = if (beforeText != null) {
+        letterCase = CaseTransformer(if (beforeText != null) {
             if (beforeText == "" || endOfSentence.find(beforeText) != null) {
                 Status.WORD_CAP
             } else {
@@ -43,7 +41,7 @@ class WordInputMode(
             }
         } else {
             Status.WORD_CAP
-        }
+        }, Status.WORD, Status.WORD_CAP, Status.WORD_UPPER)
 
         if (keyCommandResolver != null) {
             return
@@ -107,13 +105,7 @@ class WordInputMode(
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
-        typingSinceModeChange = true
-        if (setOf(Status.WORD_CAP, Status.WORD_UPPER).contains(currentStatus)) {
-            caseMask = registerMaskDigit(caseMask, codeWord.length - 1)
-        }
-        if (currentStatus == Status.WORD_CAP) {
-            currentStatus = Status.WORD
-        }
+        letterCase?.signalTyping(codeWord.length)
         //Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
@@ -122,7 +114,7 @@ class WordInputMode(
         var consumed = false
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
-            caseMask = registerMaskDigit(caseMask, codeWord.length, false)
+            letterCase?.signalDelete(codeWord.length)
             consumed = codeWord.isNotEmpty()
             // If we've deleted the whole word we were composing, reset the candidate index
             if (!consumed) {
@@ -134,9 +126,7 @@ class WordInputMode(
 
     private fun addSpace(newline: Boolean = false): KeyPressResult {
         finishComposing()
-        if (lastWordWasPeriod) {
-            currentStatus = Status.WORD_CAP
-        }
+
         val cursorOffset = when {
             // Handle the case where the corresponding short command for the newline is one that we
             // want to undo.  For now this is only SPACE.
@@ -158,30 +148,7 @@ class WordInputMode(
     }
 
     private fun shiftMode(): KeyPressResult {
-        currentStatus = when (currentStatus) {
-            Status.WORD -> {
-                if (typingSinceModeChange) {
-                    typingSinceModeChange = false
-                    Status.WORD_CAP
-                }
-                else {
-                    typingSinceModeChange = false
-                    Status.WORD_UPPER
-                }
-            }
-            Status.WORD_CAP -> {
-                typingSinceModeChange = false
-                Status.WORD
-            }
-            Status.WORD_UPPER -> {
-                if (typingSinceModeChange) {
-                    typingSinceModeChange = false
-                    Status.WORD
-                }
-                Status.WORD_CAP
-            }
-            else -> Status.WORD_CAP
-        }
+        letterCase?.shiftMode()
         return state()
     }
 
@@ -205,7 +172,7 @@ class WordInputMode(
             val recomposingWord = beforeText + afterText
             codeWord.clear()
             codeWord.append(keypad.getCodeForWord(recomposingWord))
-            caseMask = getMaskFromWord(recomposingWord)
+            letterCase?.init(recomposingWord)
             return state(
                 true,
                 word = recomposingWord,
@@ -247,17 +214,13 @@ class WordInputMode(
 
     private fun finishComposing() {
         codeWord.clear()
-        caseMask = 0u
+        letterCase?.init()
         candidateIdx = 0
         lastResolvedCodeWord = null
     }
 
     private fun isComposing(): Boolean {
         return codeWord.isNotEmpty()
-    }
-
-    private fun checkForPeriod(candidateWord: String) {
-        lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
     }
 
     private fun recordNewlineShortCommand(command: Command, key: Key?, longPress: Boolean) {
@@ -316,11 +279,11 @@ class WordInputMode(
                 candidateWord = candidateWord!!.substring(0, codeWord.length)
             }
 
-            candidateWord = applyCaseMask(candidateWord!!, caseMask)
+            candidateWord = letterCase?.applyCaseMask(candidateWord!!)
 
             lastResolvedCodeWord = codeWord
             //Log.d(LOG_TAG, "LAST RESOLVED CODE WORD: ${lastResolvedCodeWord}")
-            checkForPeriod(candidateWord!!)
+            letterCase?.signalEndOfSentence(candidateWord!!)
             return resetToWord ?: candidateWord
         }
         else if (resetToWord != null) {
@@ -341,40 +304,4 @@ class WordInputMode(
         this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
     }
 
-    companion object {
-        /**
-         * Get a new mask from the given one by setting or clearing a binary digit at the specified
-         * index.
-         */
-        fun registerMaskDigit(mask: UInt, idx: Int, on: Boolean = true): UInt {
-            return when(on) {
-                // ORing with shifted bit to switch it on
-                true -> mask or (1u shl idx)
-                false -> if (mask shr idx and 1u == 1u)
-                            // XORing with shifted bit to switch it off
-                            // Only do XOR if the bit is on in the first place
-                            mask xor (1u shl idx)
-                        else
-                            mask
-            }
-        }
-
-        fun getMaskFromWord(word: String): UInt {
-            var mask = 0u
-            word.forEachIndexed { idx, char ->
-                mask = registerMaskDigit(mask, idx, char.isUpperCase())
-            }
-            return mask
-        }
-
-        fun applyCaseMask(word: String, mask: UInt): String {
-            val builder = StringBuilder(word)
-            builder.forEachIndexed { idx, char ->
-                if ((mask shr idx) and 1u == 1u) {
-                    builder[idx] = char.uppercaseChar()
-                }
-            }
-            return builder.toString()
-        }
-    }
 }

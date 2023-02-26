@@ -227,7 +227,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             delayedCommitJob = scope.launch {
                 delay(commitDelay)
                 finishComposing()
-                mode?.resolveCodeWord("", listOf())
+                mode?.resolveCodeWord("", listOf(), resetToWord = composingText)
             }
         }
     }
@@ -394,6 +394,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                     Status.WORD -> R.drawable.mode_en
                     Status.WORD_CAP -> R.drawable.mode_en_cap
                     Status.WORD_UPPER -> R.drawable.mode_en_upper
+                    Status.ALPHA -> R.drawable.mode_la_letter
+                    Status.ALPHA_CAP -> R.drawable.mode_la_letter_cap
+                    Status.ALPHA_UPPER -> R.drawable.mode_la_letter_upper
                     Status.NUM -> R.drawable.mode_number
                     else -> 0
                 }
