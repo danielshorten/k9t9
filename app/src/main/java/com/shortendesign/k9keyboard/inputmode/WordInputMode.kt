@@ -126,7 +126,7 @@ class WordInputMode(
 
     private fun addSpace(newline: Boolean = false): KeyPressResult {
         finishComposing()
-
+        caseTransformer?.signalSpace()
         val cursorOffset = when {
             // Handle the case where the corresponding short command for the newline is one that we
             // want to undo.  For now this is only SPACE.
