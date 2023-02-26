@@ -11,7 +11,7 @@ import java.util.*
 class LetterInputMode (
     private val keypad: Keypad
 ): InputMode {
-    var letterCase: CaseTransformer? = null
+    var caseTransformer: CaseTransformer? = null
 
     private var charIdx = -1
     private var currentKey: Key? = null
@@ -19,11 +19,11 @@ class LetterInputMode (
     private val endOfSentence = """[.!]+\s*""".toRegex()
 
     override val status: Status
-        get() = this.letterCase?.status ?: Status.ALPHA_CAP
+        get() = this.caseTransformer?.status ?: Status.ALPHA_CAP
 
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {
-        letterCase = CaseTransformer(if (beforeText != null) {
+        caseTransformer = CaseTransformer(if (beforeText != null) {
             if (beforeText == "" || endOfSentence.find(beforeText) != null) {
                 Status.ALPHA_CAP
             } else {
@@ -71,7 +71,7 @@ class LetterInputMode (
         return when (command) {
             Command.CHARACTER -> handleCharacter(key, longPress)
             Command.SHIFT_MODE -> {
-                letterCase?.shiftMode()
+                caseTransformer?.shiftMode()
                 KeyPressResult(true, null, null)
             }
             Command.SPACE -> addSpace(command == Command.NEWLINE)
@@ -96,13 +96,13 @@ class LetterInputMode (
             else -> 0
         }
         val character = if (!longPress) keypad.getCharacter(key, charIdx) else keypad.getDigit(key)
-        letterCase?.signalTyping(1)
+        caseTransformer?.signalTyping(1)
         currentKey = key
         return KeyPressResult(
             true,
             null,
             null,
-            word = letterCase?.applyCaseMask(character.toString()),
+            word = caseTransformer?.applyCaseMask(character.toString()),
             commitDelay = delay,
             cursorOffset = offset
         )
@@ -112,7 +112,7 @@ class LetterInputMode (
 //        if (lastWordWasPeriod) {
 //            currentStatus = Status.WORD_CAP
 //        }
-        letterCase?.signalSpace()
+        caseTransformer?.signalSpace()
         return KeyPressResult(
             true,
             null,
@@ -123,9 +123,9 @@ class LetterInputMode (
 
     override fun resolveCodeWord(codeWord: String, candidates: List<String>, final: Boolean,
                                  resetToWord: String?): String? {
-        letterCase?.init()
+        caseTransformer?.init()
         if (resetToWord != null) {
-            letterCase?.signalEndOfSentence(resetToWord)
+            caseTransformer?.signalEndOfSentence(resetToWord)
         }
         charIdx = -1
         currentKey = null

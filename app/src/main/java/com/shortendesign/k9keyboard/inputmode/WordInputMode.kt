@@ -14,7 +14,7 @@ class WordInputMode(
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
-    var letterCase: CaseTransformer? = null
+    var caseTransformer: CaseTransformer? = null
     // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
     private var lastResolvedCodeWord: String? = null
@@ -23,7 +23,7 @@ class WordInputMode(
     private var keyCommandResolver: KeyCommandResolver? = null
 
     override val status: Status
-        get() = this.letterCase?.status ?: Status.WORD_CAP
+        get() = this.caseTransformer?.status ?: Status.WORD_CAP
 
     private val shouldRecomposeBeforeRegex = """([\w]+?)(\n*)\Z""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
@@ -33,7 +33,7 @@ class WordInputMode(
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {
         finishComposing()
-        letterCase = CaseTransformer(if (beforeText != null) {
+        caseTransformer = CaseTransformer(if (beforeText != null) {
             if (beforeText == "" || endOfSentence.find(beforeText) != null) {
                 Status.WORD_CAP
             } else {
@@ -105,7 +105,7 @@ class WordInputMode(
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
-        letterCase?.signalTyping(codeWord.length)
+        caseTransformer?.signalTyping(codeWord.length)
         //Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
@@ -114,7 +114,7 @@ class WordInputMode(
         var consumed = false
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
-            letterCase?.signalDelete(codeWord.length)
+            caseTransformer?.signalDelete(codeWord.length)
             consumed = codeWord.isNotEmpty()
             // If we've deleted the whole word we were composing, reset the candidate index
             if (!consumed) {
@@ -148,7 +148,7 @@ class WordInputMode(
     }
 
     private fun shiftMode(): KeyPressResult {
-        letterCase?.shiftMode()
+        caseTransformer?.shiftMode()
         return state()
     }
 
@@ -172,7 +172,7 @@ class WordInputMode(
             val recomposingWord = beforeText + afterText
             codeWord.clear()
             codeWord.append(keypad.getCodeForWord(recomposingWord))
-            letterCase?.init(recomposingWord)
+            caseTransformer?.init(recomposingWord)
             return state(
                 true,
                 word = recomposingWord,
@@ -214,7 +214,7 @@ class WordInputMode(
 
     private fun finishComposing() {
         codeWord.clear()
-        letterCase?.init()
+        caseTransformer?.init()
         candidateIdx = 0
         lastResolvedCodeWord = null
     }
@@ -279,11 +279,11 @@ class WordInputMode(
                 candidateWord = candidateWord!!.substring(0, codeWord.length)
             }
 
-            candidateWord = letterCase?.applyCaseMask(candidateWord!!)
+            candidateWord = caseTransformer?.applyCaseMask(candidateWord!!)
 
             lastResolvedCodeWord = codeWord
             //Log.d(LOG_TAG, "LAST RESOLVED CODE WORD: ${lastResolvedCodeWord}")
-            letterCase?.signalEndOfSentence(candidateWord!!)
+            caseTransformer?.signalEndOfSentence(candidateWord!!)
             return resetToWord ?: candidateWord
         }
         else if (resetToWord != null) {
