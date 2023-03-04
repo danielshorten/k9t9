@@ -23,15 +23,8 @@ class LetterInputMode (
 
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {
-        caseTransformer = CaseTransformer(if (beforeText != null) {
-            if (beforeText == "" || endOfSentence.find(beforeText) != null) {
-                Status.ALPHA_CAP
-            } else {
-                Status.ALPHA
-            }
-        } else {
-            Status.ALPHA_CAP
-        }, Status.ALPHA, Status.ALPHA_CAP, Status.ALPHA_UPPER)
+        caseTransformer = CaseTransformer(Status.ALPHA, Status.ALPHA_CAP, Status.ALPHA_UPPER)
+            .init(beforeText=beforeText)
         if (keyCommandResolver != null)  {
             return
         }

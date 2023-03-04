@@ -4,22 +4,23 @@ import com.shortendesign.k9keyboard.util.Status
 import java.lang.StringBuilder
 
 class CaseTransformer (
-    private var currentStatus: Status,
     private var normalStatus: Status,
     private var capitalizedStatus: Status,
     private var allUppercaseStatus: Status,
-    private var uppercaseStatuses: Set<Status> = setOf(capitalizedStatus, allUppercaseStatus)
+    private var capitalizingStatuses: Set<Status> = setOf(capitalizedStatus, allUppercaseStatus)
 ) {
+    private var currentStatus = capitalizedStatus
     private var typingSinceModeChange = false
     private var lastWordEndedSentence = false
     private var caseMask: UInt = 0u
+    private val endOfSentence = """[.!]+\s*""".toRegex()
 
     val status: Status
         get() = this.currentStatus
 
     fun signalTyping(wordLength: Int) {
         typingSinceModeChange = true
-        if (uppercaseStatuses.contains(currentStatus)) {
+        if (capitalizingStatuses.contains(currentStatus)) {
             caseMask = registerMaskDigit(caseMask, wordLength - 1)
         }
         if (currentStatus == capitalizedStatus) {
@@ -38,9 +39,7 @@ class CaseTransformer (
     }
 
     fun signalEndOfSentence(ending: String) {
-        if (setOf(".","?","!").contains(ending)) {
-            lastWordEndedSentence = true
-        }
+        lastWordEndedSentence = setOf(".","?","!").contains(ending)
     }
 
     fun shiftMode() {
@@ -80,14 +79,25 @@ class CaseTransformer (
         return builder.toString()
     }
 
-    fun init(word: String? = null) {
+    fun init(word: String? = null, beforeText: CharSequence? = null): CaseTransformer {
+        // Initialize the mask
         caseMask = 0u
-        if (word == null) {
-            return
-        }
-        word.forEachIndexed { idx, char ->
+        // If there's a word provided, use it to initialize the mask
+        word?.forEachIndexed { idx, char ->
             caseMask = registerMaskDigit(caseMask, idx, char.isUpperCase())
         }
+        // Set the current status based on the immediately preceding text
+        currentStatus = if (beforeText != null) {
+            if (beforeText == "" || endOfSentence.find(beforeText) != null) {
+                capitalizedStatus
+            } else {
+                normalStatus
+            }
+        } else {
+            currentStatus
+        }
+        // Facilitate chaining to a constructor
+        return this
     }
 
     companion object {

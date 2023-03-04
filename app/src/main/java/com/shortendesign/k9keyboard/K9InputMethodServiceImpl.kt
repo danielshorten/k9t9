@@ -38,6 +38,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private var numberMode: InputMode? = null
     // Mode enum value for cycling through modes
     private var currentMode = K9InputType.WORD.idx
+    // Also keep track of the current mode for entering text/words
+    private var currentTextMode = K9InputType.WORD
     // Current status for the input mode (e.g. capitalized word, all-caps letters)
     private var modeStatus: Status? = null
     // Keypad class to handle key/character mapping
@@ -320,7 +322,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
             InputType.TYPE_CLASS_DATETIME,
             InputType.TYPE_CLASS_PHONE -> enableInputMode(K9InputType.NUMBER)
             0 -> return
-            else -> enableInputMode(K9InputType.WORD)
+            else -> enableInputMode(currentTextMode)
         }
         updateStatusIcon(mode.status)
     }
@@ -376,9 +378,9 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
         }
         // Cache the mode for use later
         when(type) {
-            K9InputType.ALPHA -> {letterMode = mode}
+            K9InputType.ALPHA -> {currentTextMode = K9InputType.ALPHA; letterMode = mode}
             K9InputType.NUMBER -> {numberMode = mode}
-            K9InputType.WORD -> {wordMode = mode}
+            K9InputType.WORD -> {currentTextMode = K9InputType.WORD; wordMode = mode}
         }
         mode.load(keyCommandResolver, customProperties, inputConnection?.getTextBeforeCursor(5, 0))
         this.mode = mode
@@ -508,10 +510,19 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                     try {
                         wordBatch.add(
                             arrayListIndex,
-                            getWord(
-                                word = parts[0],
-                                frequency = if (parts.size > 1) parts[1].toInt() else 0
-                            )
+                            when (parts.size) {
+                                // Emoji support
+                                3 -> Word(
+                                    word = parts[0],
+                                    code = parts[2],
+                                    length = 1,
+                                    frequency = parts[1].toInt(),
+                                    "en_US")
+                                // Regular dictionary words
+                                else -> getWord(
+                                    word = parts[0],
+                                    frequency = if (parts.size > 1) parts[1].toInt() else 0)
+                            }
                         )
                         arrayListIndex++
                     }

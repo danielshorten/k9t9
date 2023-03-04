@@ -2,10 +2,7 @@ package com.shortendesign.k9keyboard.inputmode
 
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
-import com.shortendesign.k9keyboard.util.Command
-import com.shortendesign.k9keyboard.util.Key
-import com.shortendesign.k9keyboard.util.KeyCommandResolver
-import com.shortendesign.k9keyboard.util.Status
+import com.shortendesign.k9keyboard.util.*
 import java.lang.StringBuilder
 import java.util.*
 
@@ -25,24 +22,14 @@ class WordInputMode(
     override val status: Status
         get() = this.caseTransformer?.status ?: Status.WORD_CAP
 
-    private val shouldRecomposeBeforeRegex = """([\w]+?)(\n*)\Z""".toRegex()
-    private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
-    // TODO: maybe this could move into LetterCase
-    private val endOfSentence = """[.!]+\s*""".toRegex()
+    private val shouldRecomposeBeforeRegex = """([\w\p{Graph}]+?)(\n*)\Z""".toRegex()
+    private val shouldRecomposeAfterRegex = """^([\w\p{Graph}]+)""".toRegex()
 
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {
         finishComposing()
-        caseTransformer = CaseTransformer(if (beforeText != null) {
-            if (beforeText == "" || endOfSentence.find(beforeText) != null) {
-                Status.WORD_CAP
-            } else {
-                Status.WORD
-            }
-        } else {
-            Status.WORD_CAP
-        }, Status.WORD, Status.WORD_CAP, Status.WORD_UPPER)
-
+        caseTransformer = CaseTransformer(Status.WORD, Status.WORD_CAP, Status.WORD_UPPER)
+            .init(beforeText=beforeText)
         if (keyCommandResolver != null) {
             return
         }
@@ -171,7 +158,10 @@ class WordInputMode(
             val beforeText = if (beforeMatches?.groups?.get(2)?.value?.equals("") == true) beforeMatches.groups[1]?.value else ""
             val recomposingWord = beforeText + afterText
             codeWord.clear()
-            codeWord.append(keypad.getCodeForWord(recomposingWord))
+            try {
+                codeWord.append(keypad.getCodeForWord(recomposingWord))
+            }
+            catch (e: MissingLetterCode) { /* Ignore */ }
             caseTransformer?.init(recomposingWord)
             return state(
                 true,
