@@ -16,7 +16,10 @@ class Keypad(
     private lateinit var letterKeyMap: Map<Char, Key>
     // Map to cache which keys are used to type alpha-numeric characters
     private lateinit var keyIsLetterMap: Map<Key, Boolean>
-
+    private var emojiCodes = mapOf(
+        "❤️" to "143278",
+        "\uD83D\uDE18" to "15477"
+    )
     init {
         initKeyMaps(letterLayout)
     }
@@ -28,8 +31,11 @@ class Keypad(
         return keyCodeMapping.key(keyCode)
     }
 
-    fun getCommand(key: Key, longPress: Boolean = false): Command? {
-        return keyCodeMapping.command(key, longPress)
+    fun getCharacter(key: Key, idx: Int): Char {
+        val chars = letterLayout.get(key)!!
+        val length = chars.size
+        val wrappedIdx = idx % (length - 1) + 1
+        return chars[wrappedIdx]
     }
 
     /**
@@ -46,6 +52,9 @@ class Keypad(
      * Get the series of key character values required to represent a word
      */
     fun getCodeForWord(word: String): String {
+        if (emojiCodes.keys.contains(word)) {
+            return emojiCodes[word]!!
+        }
         val builder = StringBuilder()
         for (letter in word) {
             val code = codeForLetter(letter)

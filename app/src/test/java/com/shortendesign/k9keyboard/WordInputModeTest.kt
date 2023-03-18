@@ -1,10 +1,7 @@
 package com.shortendesign.k9keyboard
 
 import com.shortendesign.k9keyboard.inputmode.WordInputMode
-import com.shortendesign.k9keyboard.util.Command
-import com.shortendesign.k9keyboard.util.Key
-import com.shortendesign.k9keyboard.util.KeyCodeMapping
-import com.shortendesign.k9keyboard.util.LetterLayout
+import com.shortendesign.k9keyboard.util.*
 import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
@@ -15,15 +12,17 @@ class WordInputModeTest {
 
     @Before
     fun setup() {
-        mode = WordInputMode(
+        val mode = WordInputMode(
             keypad = Keypad(KeyCodeMapping.default(), LetterLayout.enUS)
         )
+        mode.load(KeyCommandResolver.getBasic(), null, "")
+        this.mode = mode
     }
 
     private fun pressKeys(mode: WordInputMode, vararg keys: Key): List<KeyPressResult> {
         val results = LinkedList<KeyPressResult>()
         for (key in keys) {
-            results.add(mode.getKeyCommandResult(Command.CHARACTER, key))
+            results.add(mode.getKeyCodeResult(key)!!)
         }
         return results
     }
@@ -34,7 +33,7 @@ class WordInputModeTest {
      */
     @Test
     fun testAddLetter() {
-        val result = mode!!.getKeyCommandResult(Command.CHARACTER, Key.N2)
+        val result = mode!!.getKeyCodeResult(Key.N2)
 
         assertEquals(true, result.consumed)
         //assertEquals(1, result.cursorPosition)
@@ -47,10 +46,10 @@ class WordInputModeTest {
     @Test
     fun testDeleteLetter() {
         val mode = this.mode!!
-        mode.getKeyCommandResult(Command.CHARACTER, Key.N2)
+        mode.getKeyCodeResult(Key.N2)
         mode.resolveCodeWord("2", listOf("a"), true)
 
-        val result = mode.getKeyCommandResult(Command.DELETE)
+        val result = mode.getKeyCodeResult(Key.DELETE)
 
         // Consumed is false because we're deleting the last character in the word we're composing,
         // so we delegate to the input method to delete and reset things for us.
@@ -64,7 +63,7 @@ class WordInputModeTest {
      */
     @Test
     fun testDeleteLetterNoText() {
-        val result = mode!!.getKeyCommandResult(Command.DELETE)
+        val result = mode!!.getKeyCodeResult(Key.DELETE)
 
         assertEquals(false, result.consumed)
         //assertEquals(0, result.cursorPosition)
@@ -77,11 +76,11 @@ class WordInputModeTest {
     @Test
     fun testResolveCodeWordReplacesCodeWord() {
         val mode = this.mode!!
-        mode.getKeyCommandResult(Command.CHARACTER, Key.N3)
+        mode.getKeyCodeResult(Key.N3)
         mode.resolveCodeWord(
             "3", listOf("daniel")
         )
-        mode.getKeyCommandResult(Command.CHARACTER, Key.N2)
+        mode.getKeyCodeResult(Key.N2)
         mode.resolveCodeWord(
             "32", listOf("daniel")
         )
@@ -94,7 +93,7 @@ class WordInputModeTest {
      */
     @Test
     fun testNextCandidateNotComposing() {
-        val result = mode!!.getKeyCommandResult(Command.CYCLE_CANDIDATES)
+        val result = mode!!.getKeyCodeResult(Key.STAR)
 
         assertEquals(true, result.consumed)
         //assertEquals(0, result.cursorPosition)
@@ -112,9 +111,9 @@ class WordInputModeTest {
         val candidates = listOf("call", "ball")
 
         val candidate1 = mode.resolveCodeWord("2255", candidates)
-        val result1 = mode.getKeyCommandResult(Command.CYCLE_CANDIDATES)
+        val result1 = mode.getKeyCodeResult(Key.STAR)
         val candidate2 = mode.resolveCodeWord("2255", candidates)
-        mode.getKeyCommandResult(Command.CYCLE_CANDIDATES)
+        mode.getKeyCodeResult(Key.STAR)
         val candidate3 = mode.resolveCodeWord("2255", candidates)
 
         // ASSERT
@@ -137,7 +136,7 @@ class WordInputModeTest {
 
         // EXECUTE
         // Press space
-        val result = mode.getKeyCommandResult(Command.SPACE)
+        val result = mode.getKeyCodeResult(Key.N0)
 
         assertEquals(true, result.consumed)
         //assertEquals(1, result.cursorPosition)
@@ -153,7 +152,7 @@ class WordInputModeTest {
 
         // EXECUTE
         // Press space
-        val spaceResult = mode.getKeyCommandResult(Command.SPACE)
+        val spaceResult = mode.getKeyCodeResult(Key.N0)
 
         // First space should come back with the word
         assertEquals(true, spaceResult.consumed)
@@ -195,36 +194,8 @@ class WordInputModeTest {
     }
 
     @Test
-    fun testRegisterMaskDigit() {
-        val startingMask = 0u
-
-        // Switch on index 0
-        val mask1 = WordInputMode.registerMaskDigit(startingMask, 0)
-        assertEquals("1", Integer.toBinaryString(mask1.toInt()))
-
-        // Switch on index 2 from previous mask
-        val mask2 = WordInputMode.registerMaskDigit(mask1, 2)
-        assertEquals("101", Integer.toBinaryString(mask2.toInt()))
-
-        // Switch off index 0 from previous mask
-        val mask3 = WordInputMode.registerMaskDigit(mask2, 0, false)
-        assertEquals("100", Integer.toBinaryString(mask3.toInt()))
-    }
-
-    @Test
-    fun testRegisterMaskDigitSwitchingOffZero() {
-        // 1000
-        val startingMask = 1u shl 3
-
-        // Attempt to switch off index 5
-        val mask1 = WordInputMode.registerMaskDigit(startingMask, 5, false)
-        assertEquals("1000", Integer.toBinaryString(mask1.toInt()))
-    }
-
-    @Test
     fun testNavigateLeftEndOfWord() {
-        val result = mode?.getKeyCommandResult(
-            Command.NAVIGATE,
+        val result = mode?.getKeyCodeResult(
             Key.LEFT,
             0,
             false,
@@ -237,13 +208,12 @@ class WordInputModeTest {
             result!!.recomposing)
         assertEquals(
             "The recomposing word should be correct",
-            result.word, "cursor")
+            "cursor", result.word)
     }
 
     @Test
     fun testNavigateLeftMiddleOfWord() {
-        val result = mode?.getKeyCommandResult(
-            Command.NAVIGATE,
+        val result = mode?.getKeyCodeResult(
             Key.LEFT,
             0,
             false,
@@ -261,8 +231,7 @@ class WordInputModeTest {
 
     @Test
     fun testNavigateLeftBetweenWords() {
-        val result = mode?.getKeyCommandResult(
-            Command.NAVIGATE,
+        val result = mode?.getKeyCodeResult(
             Key.LEFT,
             0,
             false,
@@ -279,17 +248,33 @@ class WordInputModeTest {
     }
 
     @Test
+    fun testNavigateRightAfterLinebreak() {
+        val result = mode?.getKeyCodeResult(
+            Key.RIGHT,
+            0,
+            false,
+            "This is the\ntext before the\ncursor.\n",
+            "Porcupine"
+        )
+
+        assertTrue(
+            "Navigating right after a linebreak should trigger recomposing",
+            result!!.recomposing)
+        assertEquals(
+            "There shouldn't be a recomposing word",
+            "Porcupine", result.word)
+    }
+
+    @Test
     fun testUndoPreviousSpaceCommandOnNewline() {
         // This test assumes that space is mapped to the 0 key (short press) and newline is mapped
         // to the 0 key (long press)
-        val shortSpaceResult = mode?.getKeyCommandResult(
-            Command.SPACE,
+        val shortSpaceResult = mode?.getKeyCodeResult(
             Key.N0,
             longPress = false
         )
 
-        val longSpaceResult = mode?.getKeyCommandResult(
-            Command.NEWLINE,
+        val longSpaceResult = mode?.getKeyCodeResult(
             Key.N0,
             longPress = true
         )
@@ -315,14 +300,12 @@ class WordInputModeTest {
     fun testDontUndoPreviousSpaceCommandOnSpace() {
         // This test assumes that space is mapped to the 0 key (short press) and newline is mapped
         // to the 0 key (long press)
-        val shortSpaceResult = mode?.getKeyCommandResult(
-            Command.SPACE,
+        val shortSpaceResult = mode?.getKeyCodeResult(
             Key.N0,
             longPress = false
         )
 
-        val shortSpaceResult2 = mode?.getKeyCommandResult(
-            Command.SPACE,
+        val shortSpaceResult2 = mode?.getKeyCodeResult(
             Key.N0,
             longPress = false
         )

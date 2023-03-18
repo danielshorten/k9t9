@@ -14,8 +14,17 @@ $ 13
 :( 9
 :D
 :O
+:h
+:he
+:hea
+:hear
+❤️ 1 143278
+:k
+:ki
+:kis
+😘 1 15477
 's
-a 3
+a 50
 aardvark
 aardvarks
 aardvark's
@@ -1870,6 +1879,7 @@ alba
 albacore
 albatross
 albeit
+Alberta
 albinism
 albino
 album
@@ -5296,6 +5306,7 @@ azotises
 azotising
 azure
 azurite
+b 49
 baa
 baas
 babble
@@ -10076,6 +10087,7 @@ byways
 byword
 bywords
 byword's
+c 48
 cab
 cabal
 cabala
@@ -18494,6 +18506,7 @@ cytoplast
 cytosine
 czar
 czardas
+d 50
 dab
 dabbed
 dabber
@@ -24202,6 +24215,7 @@ dyspnoea
 dysprosium
 dystrophic
 dystrophy
+e 49
 e's
 each
 eager
@@ -28141,6 +28155,7 @@ eyewitness's
 eying
 eyrie
 eyrir
+f 48
 f's
 fab
 fable
@@ -31950,6 +31965,7 @@ fuzzily
 fuzziness
 fuzzy
 fylfot
+g 50
 g's
 gab
 gabardine
@@ -34614,6 +34630,7 @@ gyrostabiliser
 gyrostat
 gyrostatic
 gyrostatics
+h 49
 h's
 ha
 habeas
@@ -37628,7 +37645,7 @@ hysterical
 hysterically
 hysterics
 hysteron
-I 5
+I 60
 I'd
 I'll
 I'm
@@ -41611,6 +41628,7 @@ ivory
 ivy
 ivy's
 ix
+j 50
 j's
 jab
 jabbed
@@ -42265,6 +42283,7 @@ juxtaposed
 juxtaposes
 juxtaposing
 juxtaposition
+k 49
 k's
 kabob
 kaka
@@ -42806,6 +42825,7 @@ kumquat
 kurtosis
 kwashiorkor
 kymograph
+l 48
 l's
 la
 lab
@@ -52213,6 +52233,7 @@ oyster's
 oz
 ozone
 ozonosphere
+p 50
 p's
 pH
 pa
@@ -58032,6 +58053,7 @@ pyroxene
 Pyrrhic
 python
 pythons
+q 49
 q's
 qua
 quack
@@ -58394,6 +58416,7 @@ quotidian
 quotient
 quotients
 quoting
+r 48
 r's
 rRNA
 rabbet
@@ -62671,6 +62694,7 @@ rye
 rye's
 ryegrass
 ryot
+s 47
 s's
 sabbatical
 sable

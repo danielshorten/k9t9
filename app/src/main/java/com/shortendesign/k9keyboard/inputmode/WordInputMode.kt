@@ -1,45 +1,66 @@
 package com.shortendesign.k9keyboard.inputmode
 
-import android.util.Log
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
-import com.shortendesign.k9keyboard.util.Command
-import com.shortendesign.k9keyboard.util.Key
-import com.shortendesign.k9keyboard.util.Status
+import com.shortendesign.k9keyboard.util.*
 import java.lang.StringBuilder
+import java.util.*
 
 class WordInputMode(
     private val keypad: Keypad,
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
     val codeWord = StringBuilder()
-    private var caseMask: UInt = 0u
+    var caseTransformer: CaseTransformer? = null
     // Index chosen by cycling through candidates with next key
     private var candidateIdx: Int = 0
-    private var currentStatus = Status.WORD_CAP
     private var lastResolvedCodeWord: String? = null
-    private var lastWordWasPeriod = false
     private var newlineShortCommand: Command? = null
-    private var typingSinceModeChange = false
+
+    private var keyCommandResolver: KeyCommandResolver? = null
 
     override val status: Status
-        get() = this.currentStatus
+        get() = this.caseTransformer?.status ?: Status.WORD_CAP
 
-    private val shouldRecomposeBeforeRegex = """([\w]+)$""".toRegex()
-    private val shouldRecomposeAfterRegex = """^([\w]+)""".toRegex()
+    private val shouldRecomposeBeforeRegex = """([\w\p{Cs}]+?)(\n*)\Z""".toRegex()
+    private val shouldRecomposeAfterRegex = """^([\w\p{Cs}]+)""".toRegex()
+
+    override fun load(parent: KeyCommandResolver, properties: Properties?,
+                      beforeText: CharSequence?) {
+        finishComposing()
+        caseTransformer = CaseTransformer(Status.WORD, Status.WORD_CAP, Status.WORD_UPPER)
+            .init(beforeText=beforeText)
+        if (keyCommandResolver != null) {
+            return
+        }
+        val resolver = KeyCommandResolver(
+            hashMapOf(
+                Key.STAR to Command.CYCLE_CANDIDATES,
+            ),
+            hashMapOf(
+                Key.N0 to Command.NEWLINE
+            ),
+            parent
+        )
+        if (properties != null) {
+            resolver.overrideFromProperties(properties, "command.word")
+        }
+        keyCommandResolver = resolver
+    }
 
     /**
      *
      */
-    override fun getKeyCommandResult(command: Command, key: Key?, repeatCount: Int, longPress: Boolean,
-                                     textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+    override fun getKeyCodeResult(key: Key, repeatCount: Int, longPress: Boolean,
+                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+        val command = keyCommandResolver?.getCommand(key, longPress)
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
             return state(consumed = true)
         }
         val result = when(command) {
             Command.CHARACTER -> {
-                addLetter(key!!)
+                addLetter(key)
             }
             Command.SPACE, Command.NEWLINE -> {
                 addSpace(command == Command.NEWLINE)
@@ -48,7 +69,7 @@ class WordInputMode(
                 deleteLetter()
             }
             Command.NAVIGATE -> {
-                navigate(key!!, textBeforeCursor, textAfterCursor)
+                navigate(key, textBeforeCursor, textAfterCursor)
             }
             Command.CYCLE_CANDIDATES -> {
                 nextCandidate()
@@ -63,19 +84,15 @@ class WordInputMode(
                 state(false)
             }
         }
-        recordNewlineShortCommand(command, key, longPress)
+        if (command != null) {
+            recordNewlineShortCommand(command, key, longPress)
+        }
         return result
     }
 
     private fun addLetter(key: Key): KeyPressResult {
         codeWord.append(key.code)
-        typingSinceModeChange = true
-        if (setOf(Status.WORD_CAP, Status.WORD_UPPER).contains(currentStatus)) {
-            caseMask = registerMaskDigit(caseMask, codeWord.length - 1)
-        }
-        if (currentStatus == Status.WORD_CAP) {
-            currentStatus = Status.WORD
-        }
+        caseTransformer?.signalTyping(codeWord.length)
         //Log.d(LOG_TAG, "MASK: ${Integer.toBinaryString(caseMask.toInt())}")
         return state(true, codeWord = codeWord.toString())
     }
@@ -84,21 +101,19 @@ class WordInputMode(
         var consumed = false
         if (isComposing()) {
             codeWord.deleteAt(codeWord.length - 1)
-            caseMask = registerMaskDigit(caseMask, codeWord.length, false)
+            caseTransformer?.signalDelete(codeWord.length)
             consumed = codeWord.isNotEmpty()
             // If we've deleted the whole word we were composing, reset the candidate index
             if (!consumed) {
                 candidateIdx = 0
             }
         }
-        return state(consumed, codeWord.toString())
+        return state(consumed, codeWord = codeWord.toString())
     }
 
     private fun addSpace(newline: Boolean = false): KeyPressResult {
         finishComposing()
-        if (lastWordWasPeriod) {
-            currentStatus = Status.WORD_CAP
-        }
+        caseTransformer?.signalSpace()
         val cursorOffset = when {
             // Handle the case where the corresponding short command for the newline is one that we
             // want to undo.  For now this is only SPACE.
@@ -120,30 +135,7 @@ class WordInputMode(
     }
 
     private fun shiftMode(): KeyPressResult {
-        currentStatus = when (currentStatus) {
-            Status.WORD -> {
-                if (typingSinceModeChange) {
-                    typingSinceModeChange = false
-                    Status.WORD_CAP
-                }
-                else {
-                    typingSinceModeChange = false
-                    Status.WORD_UPPER
-                }
-            }
-            Status.WORD_CAP -> {
-                typingSinceModeChange = false
-                Status.WORD
-            }
-            Status.WORD_UPPER -> {
-                if (typingSinceModeChange) {
-                    typingSinceModeChange = false
-                    Status.WORD
-                }
-                Status.WORD_CAP
-            }
-            else -> Status.WORD_CAP
-        }
+        caseTransformer?.shiftMode()
         return state()
     }
 
@@ -156,16 +148,21 @@ class WordInputMode(
 
             val cursorOffset = if (key == Key.RIGHT && afterMatches != null) {
                 afterMatches.groups[0]?.value!!.length
-            } else if (key == Key.LEFT && beforeMatches != null) {
+            } else if (key == Key.LEFT && beforeMatches != null && beforeMatches.groups[2]?.value.equals("")) {
                 -beforeMatches.groups[0]?.value!!.length
             } else {
                 return state(false)
             }
+
             val afterText = afterMatches?.groups?.get(0)?.value ?: ""
-            val recomposingWord = (beforeMatches?.groups?.get(0)?.value ?: "") + afterText
+            val beforeText = if (beforeMatches?.groups?.get(2)?.value?.equals("") == true) beforeMatches.groups[1]?.value else ""
+            val recomposingWord = beforeText + afterText
             codeWord.clear()
-            codeWord.append(keypad.getCodeForWord(recomposingWord))
-            caseMask = getMaskFromWord(recomposingWord)
+            try {
+                codeWord.append(keypad.getCodeForWord(recomposingWord))
+            }
+            catch (e: MissingLetterCode) { /* Ignore */ }
+            caseTransformer?.init(recomposingWord)
             return state(
                 true,
                 word = recomposingWord,
@@ -186,7 +183,7 @@ class WordInputMode(
         }
     }
 
-    private fun state(consumed: Boolean = true, codeWord: String = "", word: String? = null,
+    private fun state(consumed: Boolean = true, command: Command? = null, codeWord: String = "", word: String? = null,
                       recomposing: Boolean = false, cursorOffset: Int = 0): KeyPressResult {
         var finalCodeWord: String? = codeWord
         if (finalCodeWord!!.isEmpty()) {
@@ -197,6 +194,7 @@ class WordInputMode(
         }
         return KeyPressResult(
             consumed = consumed,
+            command = command,
             codeWord = finalCodeWord,
             word = word,
             recomposing = recomposing,
@@ -206,7 +204,7 @@ class WordInputMode(
 
     private fun finishComposing() {
         codeWord.clear()
-        caseMask = 0u
+        caseTransformer?.init()
         candidateIdx = 0
         lastResolvedCodeWord = null
     }
@@ -215,16 +213,12 @@ class WordInputMode(
         return codeWord.isNotEmpty()
     }
 
-    private fun checkForPeriod(candidateWord: String) {
-        lastWordWasPeriod = setOf(".","?","!").contains(candidateWord)
-    }
-
     private fun recordNewlineShortCommand(command: Command, key: Key?, longPress: Boolean) {
         // Track if this is the short keypress for the same long keypress that does a newline.
         // If it is, record the command so we can undo it if necessary.
         newlineShortCommand = when {
             !longPress && key != null
-                    && keypad.getCommand(key, true) == Command.NEWLINE -> command
+                    && keyCommandResolver?.getCommand(key, true) == Command.NEWLINE -> command
             else -> null
         }
     }
@@ -275,11 +269,11 @@ class WordInputMode(
                 candidateWord = candidateWord!!.substring(0, codeWord.length)
             }
 
-            candidateWord = applyCaseMask(candidateWord!!, caseMask)
+            candidateWord = caseTransformer?.applyCaseMask(candidateWord!!)
 
             lastResolvedCodeWord = codeWord
             //Log.d(LOG_TAG, "LAST RESOLVED CODE WORD: ${lastResolvedCodeWord}")
-            checkForPeriod(candidateWord!!)
+            caseTransformer?.signalEndOfSentence(candidateWord!!)
             return resetToWord ?: candidateWord
         }
         else if (resetToWord != null) {
@@ -300,40 +294,4 @@ class WordInputMode(
         this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
     }
 
-    companion object {
-        /**
-         * Get a new mask from the given one by setting or clearing a binary digit at the specified
-         * index.
-         */
-        fun registerMaskDigit(mask: UInt, idx: Int, on: Boolean = true): UInt {
-            return when(on) {
-                // ORing with shifted bit to switch it on
-                true -> mask or (1u shl idx)
-                false -> if (mask shr idx and 1u == 1u)
-                            // XORing with shifted bit to switch it off
-                            // Only do XOR if the bit is on in the first place
-                            mask xor (1u shl idx)
-                        else
-                            mask
-            }
-        }
-
-        fun getMaskFromWord(word: String): UInt {
-            var mask = 0u
-            word.forEachIndexed { idx, char ->
-                mask = registerMaskDigit(mask, idx, char.isUpperCase())
-            }
-            return mask
-        }
-
-        fun applyCaseMask(word: String, mask: UInt): String {
-            val builder = StringBuilder(word)
-            builder.forEachIndexed { idx, char ->
-                if ((mask shr idx) and 1u == 1u) {
-                    builder[idx] = char.uppercaseChar()
-                }
-            }
-            return builder.toString()
-        }
-    }
 }
