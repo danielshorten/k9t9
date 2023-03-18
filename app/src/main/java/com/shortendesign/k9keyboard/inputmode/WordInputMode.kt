@@ -22,8 +22,8 @@ class WordInputMode(
     override val status: Status
         get() = this.caseTransformer?.status ?: Status.WORD_CAP
 
-    private val shouldRecomposeBeforeRegex = """([\w\p{Graph}]+?)(\n*)\Z""".toRegex()
-    private val shouldRecomposeAfterRegex = """^([\w\p{Graph}]+)""".toRegex()
+    private val shouldRecomposeBeforeRegex = """([\w\p{Cs}]+?)(\n*)\Z""".toRegex()
+    private val shouldRecomposeAfterRegex = """^([\w\p{Cs}]+)""".toRegex()
 
     override fun load(parent: KeyCommandResolver, properties: Properties?,
                       beforeText: CharSequence?) {

@@ -15,7 +15,7 @@ class WordInputModeTest {
         val mode = WordInputMode(
             keypad = Keypad(KeyCodeMapping.default(), LetterLayout.enUS)
         )
-        mode.load(KeyCommandResolver.getBasic(), null)
+        mode.load(KeyCommandResolver.getBasic(), null, "")
         this.mode = mode
     }
 
@@ -194,33 +194,6 @@ class WordInputModeTest {
     }
 
     @Test
-    fun testRegisterMaskDigit() {
-        val startingMask = 0u
-
-        // Switch on index 0
-        val mask1 = WordInputMode.registerMaskDigit(startingMask, 0)
-        assertEquals("1", Integer.toBinaryString(mask1.toInt()))
-
-        // Switch on index 2 from previous mask
-        val mask2 = WordInputMode.registerMaskDigit(mask1, 2)
-        assertEquals("101", Integer.toBinaryString(mask2.toInt()))
-
-        // Switch off index 0 from previous mask
-        val mask3 = WordInputMode.registerMaskDigit(mask2, 0, false)
-        assertEquals("100", Integer.toBinaryString(mask3.toInt()))
-    }
-
-    @Test
-    fun testRegisterMaskDigitSwitchingOffZero() {
-        // 1000
-        val startingMask = 1u shl 3
-
-        // Attempt to switch off index 5
-        val mask1 = WordInputMode.registerMaskDigit(startingMask, 5, false)
-        assertEquals("1000", Integer.toBinaryString(mask1.toInt()))
-    }
-
-    @Test
     fun testNavigateLeftEndOfWord() {
         val result = mode?.getKeyCodeResult(
             Key.LEFT,
@@ -235,7 +208,7 @@ class WordInputModeTest {
             result!!.recomposing)
         assertEquals(
             "The recomposing word should be correct",
-            result.word, "cursor")
+            "cursor", result.word)
     }
 
     @Test

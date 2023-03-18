@@ -17,7 +17,8 @@ class Keypad(
     // Map to cache which keys are used to type alpha-numeric characters
     private lateinit var keyIsLetterMap: Map<Key, Boolean>
     private var emojiCodes = mapOf(
-        "❤️" to "143278"
+        "❤️" to "143278",
+        "\uD83D\uDE18" to "15477"
     )
     init {
         initKeyMaps(letterLayout)
