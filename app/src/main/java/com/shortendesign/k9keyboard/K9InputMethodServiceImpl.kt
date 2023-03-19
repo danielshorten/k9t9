@@ -489,6 +489,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
                 Log.d(LOG_TAG,"Initializing word database...")
                 initializeWords()
                 Setting.set("initialized", "t", settingDao)
+                Log.d(LOG_TAG,"Word database initialized.")
                 true
             } else {
                 Log.d(LOG_TAG, "Word database already initialized")
