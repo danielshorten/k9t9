@@ -4,11 +4,14 @@ Minimalist, Nokia-inspired T9 keyboard for Android.
 ### Features
 - Predictive text entry for English language
 - Barebones punctuation (through the 1 key)
-- 4 entry modes (cycled using pound key)
-  - Lowercase word
-  - Capitalized word
-  - All caps word
-  - Numbers
+- 3 entry modes (cycled with pound key long press)
+  - Predictive 
+    - Single press pound key to shift to single uppercase or all caps
+    - Long press zero for newline
+  - Letter entry
+    - Single press pound key to shift case
+    - Long press any key for its number
+  - Number entry
 - Recomposing previously-entered words
 
 ### Installation
