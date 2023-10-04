@@ -2,14 +2,22 @@ package com.shortendesign.k9keyboard.inputmode
 
 import com.shortendesign.k9keyboard.KeyPressResult
 import com.shortendesign.k9keyboard.Keypad
+import com.shortendesign.k9keyboard.dao.WordDao
+import com.shortendesign.k9keyboard.db.AppDatabase
+import com.shortendesign.k9keyboard.trie.Node
+import com.shortendesign.k9keyboard.trie.T9Trie
 import com.shortendesign.k9keyboard.util.*
+import kotlinx.coroutines.*
 import java.lang.StringBuilder
 import java.util.*
+import java.util.concurrent.ArrayBlockingQueue
 
 class WordInputMode(
     private val keypad: Keypad,
 ): InputMode {
     private val LOG_TAG: String = "K9Word"
+    private lateinit var wordDao: WordDao
+
     val codeWord = StringBuilder()
     var caseTransformer: CaseTransformer? = null
     // Index chosen by cycling through candidates with next key
@@ -25,38 +33,46 @@ class WordInputMode(
     private val shouldRecomposeBeforeRegex = """([\w\p{Cs}]+?)(\n*)\Z""".toRegex()
     private val shouldRecomposeAfterRegex = """^([\w\p{Cs}]+)""".toRegex()
 
-    override fun load(parent: KeyCommandResolver, properties: Properties?,
-                      beforeText: CharSequence?) {
+    override fun load(db: AppDatabase, scope: CoroutineScope, inputProxy: InputProxy,
+                      parent: KeyCommandResolver, properties: Properties?) {
         finishComposing()
         caseTransformer = CaseTransformer(Status.WORD, Status.WORD_CAP, Status.WORD_UPPER)
-            .init(beforeText=beforeText)
-        if (keyCommandResolver != null) {
-            return
+            .init(beforeText=inputProxy.getTextBeforeCursor(5, 0))
+        this.scope = scope
+        wordDao = db.getWordDao()
+        if (keyCommandResolver == null) {
+            val resolver = KeyCommandResolver(
+                hashMapOf(
+                    Key.STAR to Command.CYCLE_CANDIDATES,
+                ),
+                hashMapOf(
+                    Key.N0 to Command.NEWLINE
+                ),
+                parent
+            )
+            if (properties != null) {
+                resolver.overrideFromProperties(properties, "command.word")
+            }
+            keyCommandResolver = resolver
         }
-        val resolver = KeyCommandResolver(
-            hashMapOf(
-                Key.STAR to Command.CYCLE_CANDIDATES,
-            ),
-            hashMapOf(
-                Key.N0 to Command.NEWLINE
-            ),
-            parent
-        )
-        if (properties != null) {
-            resolver.overrideFromProperties(properties, "command.word")
-        }
-        keyCommandResolver = resolver
+    }
+
+    // TODO: Add to interface
+    fun exit() {
+        t9Trie.prune("a", depth = 3)
     }
 
     /**
      *
      */
     override fun getKeyCodeResult(key: Key, repeatCount: Int, longPress: Boolean,
-                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): KeyPressResult {
+                                  textBeforeCursor: CharSequence?, textAfterCursor: CharSequence?): Boolean {
+
+        // TODO: Don't handle if trie isn't initialized
         val command = keyCommandResolver?.getCommand(key, longPress)
         // Swallow regular keypress repeats that arent navigate or delete commands
         if (!longPress && repeatCount > 0 && !setOf(Command.NAVIGATE, Command.DELETE).contains(command)) {
-            return state(consumed = true)
+            return true
         }
         val result = when(command) {
             Command.CHARACTER -> {
@@ -293,5 +309,4 @@ class WordInputMode(
     private fun replaceCodeWord(codeWord: String) {
         this.codeWord.replace(0, maxOf(this.codeWord.length, 0), codeWord)
     }
-
 }

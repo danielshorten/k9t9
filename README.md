@@ -21,7 +21,7 @@ adb install <release>.apk
 ```
 Set K9T9 as the active IME:
 ```
-adb shell ime set com.shortendesign.k9keyboard/.K9InputMethodServiceImpl
+adb shell ime set com.shortendesign.k9keyboard/.K9InputMethodService
 ```
 On first run after install, K9T9 may take some time to load the word database and populate its
 data structures.  During this time, the word input modes will not work.
