@@ -38,6 +38,7 @@ android {
             includeAndroidResources = true
         }
     }
+    namespace 'com.shortendesign.k9keyboard'
 }
 
 dependencies {
