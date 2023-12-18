@@ -1,5 +1,5 @@
 # k9t9
-Minimalist, Nokia-inspired T9 keyboard for Android.
+Minimalist, Nokia-inspired T9 IME for Android feature phones with physical number pads.
 
 ### Features
 - Predictive text entry for English language
