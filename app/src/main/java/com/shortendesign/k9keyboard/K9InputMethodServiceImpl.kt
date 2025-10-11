@@ -70,6 +70,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     private var isComposing = false
     private var lastComposingText: String? = null
 
+    private var lastOnKeyDown: Boolean = false
+
     private var inputConnection: InputConnection? = null
     private var cursorPosition: Int = 0
 
@@ -91,7 +93,8 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d(LOG_TAG, "KEYCODE: ${keyCode}")
         val key = keypad.getKey(keyCode)
-        return handleKeyCode(key, event, false)
+        lastOnKeyDown = handleKeyCode(key, event, false)
+        return lastOnKeyDown
     }
 
     override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
@@ -288,7 +291,7 @@ class K9InputMethodServiceImpl : InputMethodService(), K9InputMethodService {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        return super.onKeyUp(keyCode, event)
+        return lastOnKeyDown
     }
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int,
