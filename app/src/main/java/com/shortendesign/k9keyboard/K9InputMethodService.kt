@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputConnection
 import android.widget.Toast
 import com.shortendesign.k9keyboard.dao.SettingDao
 import com.shortendesign.k9keyboard.dao.WordDao
@@ -14,8 +13,6 @@ import com.shortendesign.k9keyboard.db.AppDatabase
 import com.shortendesign.k9keyboard.entity.Setting
 import com.shortendesign.k9keyboard.entity.Word
 import com.shortendesign.k9keyboard.inputmode.*
-import com.shortendesign.k9keyboard.trie.Node
-import com.shortendesign.k9keyboard.trie.T9Trie
 import com.shortendesign.k9keyboard.util.*
 import kotlinx.coroutines.*
 import java.io.File
@@ -24,7 +21,6 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.Math.abs
 import java.util.*
-import java.util.concurrent.ArrayBlockingQueue
 
 
 class K9InputMethodService : InputMethodService() {
@@ -58,7 +54,6 @@ class K9InputMethodService : InputMethodService() {
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     private var inputProxy: InputProxy? = null
-
 
     override fun onCreate() {
         super.onCreate()
